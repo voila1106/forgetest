@@ -1,0 +1,24 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "com.voila.forge.mixin",
+    "compatibilityLevel": "JAVA_8",
+    "refmap": "forge.refmap.json",
+    "mixins": [
+        "HookClientNetHandler",
+        "HookGameRenderer",
+        "HookScoreBoard",
+        "HookSharedConstants",
+        "HookSkullTileEntity"
+    ],
+    "client": [
+        "HookClientWorld",
+        "HookIngameGui",
+        "HookLivingRenderer",
+        "HookMinecraft",
+        "HookParticleManager"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+  }
+}
