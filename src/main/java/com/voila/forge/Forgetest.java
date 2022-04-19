@@ -118,7 +118,7 @@ public class Forgetest
 		}
 	}
 
-	@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD,value = Dist.CLIENT)
+	@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 	public static class RegisterParticle
 	{
 		@SubscribeEvent
@@ -126,5 +126,14 @@ public class Forgetest
 		{
 			Minecraft.getInstance().particles.registerFactory(TestItem.damage.get(), DamageParticle.Factory::new);
 		}
+	}
+
+	/**
+	 * remove burning and underwater overlay*/
+	@SubscribeEvent
+	public void onOverlay(RenderBlockOverlayEvent event)
+	{
+		if(event.getOverlayType() != RenderBlockOverlayEvent.OverlayType.BLOCK)
+			event.setCanceled(true);
 	}
 }
