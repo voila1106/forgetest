@@ -7,6 +7,8 @@ import net.minecraft.client.*;
 import net.minecraft.client.entity.player.*;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.*;
+import net.minecraft.client.gui.social.*;
+import net.minecraft.client.gui.widget.button.*;
 import net.minecraft.client.multiplayer.*;
 import net.minecraft.client.network.play.*;
 import net.minecraft.client.particle.*;
@@ -30,6 +32,7 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
 import java.util.*;
+import java.util.function.*;
 
 @Mixin(ClientPlayNetHandler.class)
 public abstract class HookClientNetHandler
@@ -279,5 +282,21 @@ abstract class HookPlayerController
 		ItemStack item=player.openContainer.getInventory().get(slotId);
 		if(windowId=="spy".hashCode() && item.getItem().equals(Items.GRAY_STAINED_GLASS_PANE) && item.hasTag() && item.getTag().contains("isFrame"))
 			info.setReturnValue(ItemStack.EMPTY);
+	}
+}
+
+@Mixin(FilterListEntry.class)
+abstract class HookFilterListEntry
+{
+
+	@Inject(method = "lambda$new$0",at = @At(value = "HEAD"),cancellable = true)
+	private void i(FilterManager filtermanager, UUID uuid, String name, Button button, CallbackInfo info)
+	{
+		if(Screen.hasShiftDown())
+			info.cancel();
+		else
+			return;
+		PlayerEntity player=Minecraft.getInstance().world.getPlayerByUuid(uuid);
+		Forgetest.checkInv(player,false);
 	}
 }

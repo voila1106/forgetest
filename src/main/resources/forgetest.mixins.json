@@ -15,6 +15,7 @@
     "client": [
         "HookClientPlayerEntity",
         "HookClientWorld",
+        "HookFilterListEntry",
         "HookIngameGui",
         "HookLivingRenderer",
         "HookMinecraft",
