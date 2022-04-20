@@ -288,8 +288,7 @@ abstract class HookPlayerController
 @Mixin(FilterListEntry.class)
 abstract class HookFilterListEntry
 {
-
-	@Inject(method = "lambda$new$0",at = @At(value = "HEAD"),cancellable = true)
+	@Inject(method = "func_244751_b",at = @At(value = "HEAD"),cancellable = true)
 	private void i(FilterManager filtermanager, UUID uuid, String name, Button button, CallbackInfo info)
 	{
 		if(Screen.hasShiftDown())
@@ -299,4 +298,5 @@ abstract class HookFilterListEntry
 		PlayerEntity player=Minecraft.getInstance().world.getPlayerByUuid(uuid);
 		Forgetest.checkInv(player,false);
 	}
+
 }
