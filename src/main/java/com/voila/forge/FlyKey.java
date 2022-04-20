@@ -1,12 +1,8 @@
 package com.voila.forge;
 
 import net.minecraft.client.*;
-import net.minecraft.client.gui.screen.*;
-import net.minecraft.client.gui.screen.inventory.*;
 import net.minecraft.client.settings.*;
-import net.minecraft.enchantment.*;
 import net.minecraft.entity.player.*;
-import net.minecraft.item.*;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.eventbus.api.*;
 import net.minecraftforge.fml.client.registry.*;
