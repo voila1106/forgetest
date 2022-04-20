@@ -13,11 +13,13 @@
         "HookSkullTileEntity"
     ],
     "client": [
+        "HookClientPlayerEntity",
         "HookClientWorld",
         "HookIngameGui",
         "HookLivingRenderer",
         "HookMinecraft",
-        "HookParticleManager"
+        "HookParticleManager",
+        "HookPlayerController"
     ],
     "injectors": {
         "defaultRequire": 1

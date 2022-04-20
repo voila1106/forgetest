@@ -3,18 +3,26 @@ package com.voila.forge;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.*;
+import net.minecraft.client.entity.player.*;
+import net.minecraft.client.gui.*;
+import net.minecraft.client.gui.screen.inventory.*;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.world.*;
 import net.minecraft.entity.*;
+import net.minecraft.entity.player.*;
+import net.minecraft.inventory.container.*;
 import net.minecraft.item.*;
+import net.minecraft.nbt.*;
 import net.minecraft.particles.*;
+import net.minecraft.tileentity.*;
+import net.minecraft.util.Util;
 import net.minecraft.util.text.*;
 import net.minecraft.world.*;
 import net.minecraft.world.server.*;
 import net.minecraftforge.api.distmarker.*;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.*;
 import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.*;
 import net.minecraftforge.eventbus.api.*;
@@ -30,6 +38,7 @@ import net.minecraftforge.fml.server.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.*;
 import java.util.stream.Collectors;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -37,6 +46,7 @@ import java.util.stream.Collectors;
 public class Forgetest
 {
 	public static String ID = "forgetest";
+	private static Map<Integer,Runnable> delayedTask=new HashMap<>();
 
 	// Directly reference a log4j logger.
 	private static final Logger LOGGER = LogManager.getLogger();
@@ -136,4 +146,98 @@ public class Forgetest
 		if(event.getOverlayType() != RenderBlockOverlayEvent.OverlayType.BLOCK)
 			event.setCanceled(true);
 	}
+
+	@SubscribeEvent
+	public void onInteractEntity(PlayerInteractEvent.EntityInteract event)
+	{
+		checkInv(event.getTarget(),true);
+	}
+
+	public static void checkInv(Entity target,boolean fromEvent)
+	{
+		ClientPlayerEntity me=Minecraft.getInstance().player;
+		if(me==null || !(target instanceof PlayerEntity))
+		{
+			return;
+		}
+		if(fromEvent && !me.isSneaking())
+		{
+			return;
+		}
+		PlayerEntity player=(PlayerEntity)target;
+		PlayerInventory inv=player.inventory;
+		ScreenManager.openScreen(ContainerType.GENERIC_9X5,Minecraft.getInstance(),"spy".hashCode(),player.getName());
+		Container container=me.openContainer;
+		ItemStack frame=Items.GRAY_STAINED_GLASS_PANE.getDefaultInstance().setDisplayName(StringTextComponent.EMPTY);
+		frame.setTagInfo("isFrame", ByteNBT.valueOf(true));
+		for(Slot t : container.inventorySlots)
+		{
+			container.putStackInSlot(t.getSlotIndex(),frame.copy());
+		}
+		container.putStackInSlot(1,frame.copy().setDisplayName(name("头盔")));
+		container.putStackInSlot(3,frame.copy().setDisplayName(name("胸甲")));
+		container.putStackInSlot(5,frame.copy().setDisplayName(name("护腿")));
+		container.putStackInSlot(7,frame.copy().setDisplayName(name("靴子")));
+		container.putStackInSlot(21,frame.copy().setDisplayName(name("副手")));
+		container.putStackInSlot(23,frame.copy().setDisplayName(name("主手")));
+		container.putStackInSlot(29,frame.copy().setDisplayName(name("副手")));
+		container.putStackInSlot(33,frame.copy().setDisplayName(name("主手")));
+		container.putStackInSlot(39,frame.copy().setDisplayName(name("副手")));
+		container.putStackInSlot(41,frame.copy().setDisplayName(name("主手")));
+
+
+		List<ItemStack> armor=inv.armorInventory;
+		container.putStackInSlot(10,armor.get(3).copy());
+		container.putStackInSlot(12,armor.get(2).copy());
+		container.putStackInSlot(14,armor.get(1).copy());
+		container.putStackInSlot(16,armor.get(0).copy());
+
+		List<ItemStack> main=inv.mainInventory;
+		container.putStackInSlot(32,main.get(0).copy());
+
+		List<ItemStack> off=inv.offHandInventory;
+		container.putStackInSlot(30,off.get(0).copy());
+
+	}
+
+	private static ITextComponent name(String str)
+	{
+		return ITextComponent.Serializer.getComponentFromJson("{\n" +
+			"    \"text\":\""+str+"\",\n" +
+			"    \"italic\":false,\n" +
+			"    \"color\":\"aqua\"\n" +
+			"}");
+	}
+	public static void sendMessage(String msg)
+	{
+		Minecraft.getInstance().ingameGUI.sendChatMessage(ChatType.SYSTEM, new StringTextComponent(msg), Util.DUMMY_UUID);
+	}
+
+	@OnlyIn(Dist.CLIENT)
+	@SubscribeEvent
+	public void tick(TickEvent.PlayerTickEvent event)
+	{
+		if(event.phase == TickEvent.Phase.START)
+			return;
+		Map<Integer,Runnable> map=new HashMap<>();
+		for(int i : delayedTask.keySet())
+		{
+			if(i <= 0)
+			{
+				delayedTask.get(i).run();
+				delayedTask.remove(i);
+			}else
+			{
+				map.put(i - 1, delayedTask.get(i));
+			}
+
+		}
+		delayedTask=map;
+	}
+
+	public static void runDelay(int ticks,Runnable task)
+	{
+		delayedTask.put(ticks,task);
+	}
+
 }

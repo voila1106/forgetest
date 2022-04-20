@@ -4,14 +4,19 @@ import com.mojang.authlib.*;
 import com.mojang.blaze3d.matrix.*;
 import com.voila.forge.*;
 import net.minecraft.client.*;
+import net.minecraft.client.entity.player.*;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.*;
+import net.minecraft.client.multiplayer.*;
 import net.minecraft.client.network.play.*;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.world.*;
 import net.minecraft.entity.*;
+import net.minecraft.entity.player.*;
+import net.minecraft.inventory.container.*;
+import net.minecraft.item.*;
 import net.minecraft.particles.*;
 import net.minecraft.scoreboard.*;
 import net.minecraft.server.management.*;
@@ -32,8 +37,49 @@ public abstract class HookClientNetHandler
 
 }
 
+/**
+ * /.check command
+ */
+@Mixin(ClientPlayerEntity.class)
+abstract class HookClientPlayerEntity extends AbstractClientPlayerEntity
+{
+	private HookClientPlayerEntity(ClientWorld world, GameProfile profile)
+	{
+		super(world, profile);
+	}
+
+	@Inject(method = "sendChatMessage",at = @At("HEAD"),cancellable = true)
+	private void chat(String message, CallbackInfo info)
+	{
+		if(message.startsWith("/.check"))
+			info.cancel();
+		else
+			return;
+		String[] args=message.split(" ");
+		if(args.length<2)
+		{
+			Forgetest.sendMessage(TextFormatting.RED+"未输入玩家");
+			return;
+		}
+		String name=args[1];
+		for(Entity t:worldClient.getAllEntities())
+		{
+			if((t instanceof PlayerEntity) && t.getName().getString().equals(name))
+			{
+				Forgetest.runDelay(10,()->Forgetest.checkInv(t,false));
+				return;
+			}
+		}
+		Forgetest.sendMessage(TextFormatting.RED+"找不到玩家");
+
+	}
+}
+
+/**
+ * disable damage screen shake
+ * */
 @Mixin(GameRenderer.class)
-abstract class HookGameRenderer  //disable damage screen shake
+abstract class HookGameRenderer
 {
 	@Inject(method = "hurtCameraEffect", at = @At(value = "FIELD", target = "net/minecraft/entity/LivingEntity.attackedAtYaw:F"), cancellable = true)
 	private void hurt(MatrixStack matrix, float ticks, CallbackInfo ci)
@@ -42,8 +88,11 @@ abstract class HookGameRenderer  //disable damage screen shake
 	}
 }
 
+/**
+ * perform damage amount particle
+ * */
 @Mixin(LivingRenderer.class)
-abstract class HookLivingRenderer  //damage amount particle
+abstract class HookLivingRenderer
 {
 	private Map<Integer, Float> hs = new HashMap<>();
 	private World world;
@@ -78,8 +127,11 @@ abstract class HookLivingRenderer  //damage amount particle
 	}
 }
 
+/**
+ * remove some particles
+ * */
 @Mixin(ParticleManager.class)
-abstract class HookParticleManager  // remove some particles
+abstract class HookParticleManager
 {
 	@Inject(method = "addParticle", at = @At("HEAD"), cancellable = true)
 	private void i(IParticleData particleData, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, CallbackInfoReturnable<Particle> info)
@@ -89,9 +141,11 @@ abstract class HookParticleManager  // remove some particles
 	}
 }
 
-
+/**
+ * no spam
+ * */
 @Mixin(IngameGui.class)
-abstract class HookIngameGui  // no spam
+abstract class HookIngameGui
 {
 	@Inject(method = "sendChatMessage", at = @At("HEAD"), cancellable = true)
 	private void i(ChatType type, ITextComponent cmp, UUID uuid, CallbackInfo info)
@@ -105,8 +159,11 @@ abstract class HookIngameGui  // no spam
 	}
 }
 
+/**
+ * reset spam state
+ * */
 @Mixin(Minecraft.class)
-abstract class HookMinecraft  // no spam
+abstract class HookMinecraft
 {
 	@Inject(method = "displayGuiScreen", at = @At("HEAD"))
 	private void i(Screen guiScreenIn, CallbackInfo ci)
@@ -136,8 +193,12 @@ abstract class HookItemStack
 }
 */
 
+
+/**
+ * fix score board NPE
+ * */
 @Mixin(Scoreboard.class)
-abstract class HookScoreBoard  // fix score board NPE
+abstract class HookScoreBoard
 {
 	@Inject(method = "removeTeam", at = @At("HEAD"), cancellable = true)
 	private void i(ScorePlayerTeam playerTeam, CallbackInfo ci)
@@ -147,8 +208,11 @@ abstract class HookScoreBoard  // fix score board NPE
 	}
 }
 
+/**
+ * fix skull texture loading stuck
+ * */
 @Mixin(SkullTileEntity.class)
-abstract class HookSkullTileEntity  // fix skull texture loading stuck
+abstract class HookSkullTileEntity
 {
 	@Shadow
 	private static PlayerProfileCache profileCache;
@@ -173,12 +237,13 @@ abstract class HookSharedConstants  // allow all characters
 	}
 }
 
+
+/**
+ * disable portal sound
+ */
 @Mixin(ClientWorld.class)
 abstract class HookClientWorld
 {
-	/**
-	 * disable portal sound
-	 */
 	@Inject(method = "playSound(DDDLnet/minecraft/util/SoundEvent;Lnet/minecraft/util/SoundCategory;FFZ)V", at = @At("HEAD"), cancellable = true)
 	private void i(double x, double y, double z, SoundEvent soundIn, SoundCategory category, float volume, float pitch, boolean distanceDelay, CallbackInfo info)
 	{
@@ -187,6 +252,9 @@ abstract class HookClientWorld
 	}
 }
 
+/**
+ * never raining
+ * */
 @Mixin(Biome.class)
 abstract class HookBiome
 {
@@ -197,4 +265,19 @@ abstract class HookBiome
 	}
 }
 
-// TODO: check others backpack
+/**
+ * prevent taking frames
+ * */
+@Mixin(PlayerController.class)
+abstract class HookPlayerController
+{
+	@Inject(method = "windowClick",at = @At("HEAD"),cancellable = true)
+	private void i(int windowId, int slotId, int mouseButton, ClickType type, PlayerEntity player, CallbackInfoReturnable<ItemStack> info)
+	{
+		if(slotId<0)
+			return;
+		ItemStack item=player.openContainer.getInventory().get(slotId);
+		if(windowId=="spy".hashCode() && item.getItem().equals(Items.GRAY_STAINED_GLASS_PANE) && item.hasTag() && item.getTag().contains("isFrame"))
+			info.setReturnValue(ItemStack.EMPTY);
+	}
+}
