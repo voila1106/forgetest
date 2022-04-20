@@ -158,6 +158,7 @@ public class Forgetest
 		ClientPlayerEntity me=Minecraft.getInstance().player;
 		if(me==null || !(target instanceof PlayerEntity))
 		{
+			sendMessage(TextFormatting.RED+ "玩家无效");
 			return;
 		}
 		if(fromEvent && !me.isSneaking())
