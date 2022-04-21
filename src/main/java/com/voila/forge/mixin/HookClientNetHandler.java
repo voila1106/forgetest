@@ -32,7 +32,6 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
 import java.util.*;
-import java.util.function.*;
 
 @Mixin(ClientPlayNetHandler.class)
 public abstract class HookClientNetHandler
@@ -175,28 +174,6 @@ abstract class HookMinecraft
 	}
 }
 
-/*
-@Mixin(ItemStack.class)
-abstract class HookItemStack
-{
-	@Shadow private CompoundNBT tag;
-
-	@Inject(method = "addEnchantment",
-		at = @At(value = "INVOKE",target = "Lnet/minecraft/nbt/CompoundNBT;getList(Ljava/lang/String;I)Lnet/minecraft/nbt/ListNBT;"),
-		cancellable = true)
-	private void i(Enchantment ench, int level, CallbackInfo ci)
-	{
-		ListNBT listnbt = this.tag.getList("Enchantments", 10);
-		CompoundNBT compoundnbt = new CompoundNBT();
-		compoundnbt.putString("id", String.valueOf((Object)Registry.ENCHANTMENT.getKey(ench)));
-		compoundnbt.putShort("lvl", (short)level);
-		listnbt.add(compoundnbt);
-		ci.cancel();
-	}
-}
-*/
-
-
 /**
  * fix score board NPE
  * */
@@ -274,6 +251,7 @@ abstract class HookBiome
 @Mixin(PlayerController.class)
 abstract class HookPlayerController
 {
+	@SuppressWarnings("all")  // if hasTag() is true, getTag() must not be null
 	@Inject(method = "windowClick",at = @At("HEAD"),cancellable = true)
 	private void i(int windowId, int slotId, int mouseButton, ClickType type, PlayerEntity player, CallbackInfoReturnable<ItemStack> info)
 	{
@@ -285,6 +263,10 @@ abstract class HookPlayerController
 	}
 }
 
+/**
+ * check inventory from social screen
+ * */
+@SuppressWarnings("all")  // social screen must be opened in a game, so world must not be null
 @Mixin(FilterListEntry.class)
 abstract class HookFilterListEntry
 {
