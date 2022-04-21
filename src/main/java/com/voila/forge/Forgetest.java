@@ -32,7 +32,7 @@ import java.util.stream.*;
 public class Forgetest
 {
 	public static String ID = "forgetest";
-	private static Map<Integer,Runnable> delayedTask=new HashMap<>();
+	private static Map<Integer, Runnable> delayedTask = new HashMap<>();
 
 	// Directly reference a log4j logger.
 	private static final Logger LOGGER = LogManager.getLogger();
@@ -125,7 +125,8 @@ public class Forgetest
 	}
 
 	/**
-	 * remove burning and underwater overlay*/
+	 * remove burning and underwater overlay
+	 */
 	@SubscribeEvent
 	public void onOverlay(RenderBlockOverlayEvent event)
 	{
@@ -136,65 +137,67 @@ public class Forgetest
 	@SubscribeEvent
 	public void onInteractEntity(PlayerInteractEvent.EntityInteract event)
 	{
-		checkInv(event.getTarget(),true);
+		if(event.getTarget() instanceof PlayerEntity)
+			checkInv(event.getTarget(), true);
 	}
 
-	public static void checkInv(Entity target,boolean fromEvent)
+	public static void checkInv(Entity target, boolean fromEvent)
 	{
-		ClientPlayerEntity me=Minecraft.getInstance().player;
-		if(me==null || !(target instanceof PlayerEntity))
+		ClientPlayerEntity me = Minecraft.getInstance().player;
+		if(me == null || !(target instanceof PlayerEntity))
 		{
-			sendMessage(TextFormatting.RED+ "玩家无效");
+			sendMessage(TextFormatting.RED + "玩家无效");
 			return;
 		}
 		if(fromEvent && !me.isSneaking())
 		{
 			return;
 		}
-		PlayerEntity player=(PlayerEntity)target;
-		PlayerInventory inv=player.inventory;
-		ScreenManager.openScreen(ContainerType.GENERIC_9X5,Minecraft.getInstance(),"spy".hashCode(),player.getName());
-		Container container=me.openContainer;
-		ItemStack frame=Items.GRAY_STAINED_GLASS_PANE.getDefaultInstance().setDisplayName(StringTextComponent.EMPTY);
+		PlayerEntity player = (PlayerEntity)target;
+		PlayerInventory inv = player.inventory;
+		ScreenManager.openScreen(ContainerType.GENERIC_9X5, Minecraft.getInstance(), "spy".hashCode(), player.getName());
+		Container container = me.openContainer;
+		ItemStack frame = Items.GRAY_STAINED_GLASS_PANE.getDefaultInstance().setDisplayName(StringTextComponent.EMPTY);
 		frame.setTagInfo("isFrame", ByteNBT.valueOf(true));
 		for(Slot t : container.inventorySlots)
 		{
-			container.putStackInSlot(t.getSlotIndex(),frame.copy());
+			container.putStackInSlot(t.getSlotIndex(), frame.copy());
 		}
-		container.putStackInSlot(1,frame.copy().setDisplayName(name("头盔")));
-		container.putStackInSlot(3,frame.copy().setDisplayName(name("胸甲")));
-		container.putStackInSlot(5,frame.copy().setDisplayName(name("护腿")));
-		container.putStackInSlot(7,frame.copy().setDisplayName(name("靴子")));
-		container.putStackInSlot(21,frame.copy().setDisplayName(name("副手")));
-		container.putStackInSlot(23,frame.copy().setDisplayName(name("主手")));
-		container.putStackInSlot(29,frame.copy().setDisplayName(name("副手")));
-		container.putStackInSlot(33,frame.copy().setDisplayName(name("主手")));
-		container.putStackInSlot(39,frame.copy().setDisplayName(name("副手")));
-		container.putStackInSlot(41,frame.copy().setDisplayName(name("主手")));
+		container.putStackInSlot(1, frame.copy().setDisplayName(name("头盔")));
+		container.putStackInSlot(3, frame.copy().setDisplayName(name("胸甲")));
+		container.putStackInSlot(5, frame.copy().setDisplayName(name("护腿")));
+		container.putStackInSlot(7, frame.copy().setDisplayName(name("靴子")));
+		container.putStackInSlot(21, frame.copy().setDisplayName(name("副手")));
+		container.putStackInSlot(23, frame.copy().setDisplayName(name("主手")));
+		container.putStackInSlot(29, frame.copy().setDisplayName(name("副手")));
+		container.putStackInSlot(33, frame.copy().setDisplayName(name("主手")));
+		container.putStackInSlot(39, frame.copy().setDisplayName(name("副手")));
+		container.putStackInSlot(41, frame.copy().setDisplayName(name("主手")));
 
 
-		List<ItemStack> armor=inv.armorInventory;
-		container.putStackInSlot(10,armor.get(3).copy());
-		container.putStackInSlot(12,armor.get(2).copy());
-		container.putStackInSlot(14,armor.get(1).copy());
-		container.putStackInSlot(16,armor.get(0).copy());
+		List<ItemStack> armor = inv.armorInventory;
+		container.putStackInSlot(10, armor.get(3).copy());
+		container.putStackInSlot(12, armor.get(2).copy());
+		container.putStackInSlot(14, armor.get(1).copy());
+		container.putStackInSlot(16, armor.get(0).copy());
 
-		List<ItemStack> main=inv.mainInventory;
-		container.putStackInSlot(32,main.get(0).copy());
+		List<ItemStack> main = inv.mainInventory;
+		container.putStackInSlot(32, main.get(0).copy());
 
-		List<ItemStack> off=inv.offHandInventory;
-		container.putStackInSlot(30,off.get(0).copy());
+		List<ItemStack> off = inv.offHandInventory;
+		container.putStackInSlot(30, off.get(0).copy());
 
 	}
 
 	private static ITextComponent name(String str)
 	{
 		return ITextComponent.Serializer.getComponentFromJson("{\n" +
-			"    \"text\":\""+str+"\",\n" +
+			"    \"text\":\"" + str + "\",\n" +
 			"    \"italic\":false,\n" +
 			"    \"color\":\"aqua\"\n" +
 			"}");
 	}
+
 	public static void sendMessage(String msg)
 	{
 		Minecraft.getInstance().ingameGUI.sendChatMessage(ChatType.SYSTEM, new StringTextComponent(msg), Util.DUMMY_UUID);
@@ -206,7 +209,7 @@ public class Forgetest
 	{
 		if(event.phase == TickEvent.Phase.START)
 			return;
-		Map<Integer,Runnable> map=new HashMap<>();
+		Map<Integer, Runnable> map = new HashMap<>();
 		for(int i : delayedTask.keySet())
 		{
 			if(i <= 0)
@@ -219,12 +222,12 @@ public class Forgetest
 			}
 
 		}
-		delayedTask=map;
+		delayedTask = map;
 	}
 
-	public static void runDelay(int ticks,Runnable task)
+	public static void runDelay(int ticks, Runnable task)
 	{
-		delayedTask.put(ticks,task);
+		delayedTask.put(ticks, task);
 	}
 
 }
