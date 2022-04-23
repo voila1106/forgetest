@@ -2,6 +2,7 @@ package com.voila.forge.mixin;
 
 import com.mojang.authlib.*;
 import com.mojang.blaze3d.matrix.*;
+import com.mojang.blaze3d.systems.*;
 import com.voila.forge.*;
 import net.minecraft.client.*;
 import net.minecraft.client.entity.player.*;
@@ -20,6 +21,7 @@ import net.minecraft.entity.player.*;
 import net.minecraft.inventory.container.*;
 import net.minecraft.item.*;
 import net.minecraft.particles.*;
+import net.minecraft.potion.*;
 import net.minecraft.scoreboard.*;
 import net.minecraft.server.management.*;
 import net.minecraft.tileentity.*;
@@ -31,6 +33,7 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
+import javax.annotation.*;
 import java.util.*;
 
 @Mixin(ClientPlayNetHandler.class)
@@ -167,10 +170,19 @@ abstract class HookIngameGui
 @Mixin(Minecraft.class)
 abstract class HookMinecraft
 {
-	@Inject(method = "displayGuiScreen", at = @At("HEAD"))
-	private void i(Screen guiScreenIn, CallbackInfo ci)
+	@Shadow @Nullable public ClientPlayerEntity player;
+
+	@Inject(method = "displayGuiScreen", at = @At("HEAD"),cancellable = true)
+	private void i(Screen guiScreenIn, CallbackInfo info)
 	{
 		Forgetest.last = "";
+
+		//respawn immediately
+		if(guiScreenIn instanceof DeathScreen)
+		{
+			player.respawnPlayer();
+			info.cancel();
+		}
 	}
 }
 
@@ -279,6 +291,18 @@ abstract class HookFilterListEntry
 			return;
 		PlayerEntity player=Minecraft.getInstance().world.getPlayerByUuid(uuid);
 		Forgetest.checkInv(player,false);
+	}
+
+}
+
+@Mixin(LivingEntity.class)
+abstract class HookFogRenderer
+{
+	@Inject(method = "isPotionActive",at = @At("HEAD"), cancellable = true)
+	private void i(Effect effect, CallbackInfoReturnable<Boolean> info)
+	{
+		if(effect==Effects.BLINDNESS)
+			info.setReturnValue(false);
 	}
 
 }

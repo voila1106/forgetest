@@ -16,6 +16,7 @@
         "HookClientPlayerEntity",
         "HookClientWorld",
         "HookFilterListEntry",
+        "HookFogRenderer",
         "HookIngameGui",
         "HookLivingRenderer",
         "HookMinecraft",
