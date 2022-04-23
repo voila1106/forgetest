@@ -2,6 +2,7 @@ package com.voila.forge;
 
 import net.minecraft.client.*;
 import net.minecraft.client.settings.*;
+import net.minecraft.entity.ai.attributes.*;
 import net.minecraft.entity.player.*;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.eventbus.api.*;
@@ -34,11 +35,9 @@ public class FlyKey
 	{
 //		LOGGER.info(event.getKey()+" "+event.getAction());
 		PlayerEntity player = Minecraft.getInstance().player;
-		PlayerAbilities ability;
-		if(player != null)
-			ability = player.abilities;
-		else
+		if(player == null)
 			return;
+		PlayerAbilities ability = player.abilities;
 		if(upKey.isPressed())
 		{
 			ability.setFlySpeed(ability.getFlySpeed() + 0.005F);
