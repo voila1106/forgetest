@@ -8,6 +8,7 @@
         "HookBiome",
         "HookClientNetHandler",
         "HookGameRenderer",
+        "HookLivingEntity",
         "HookScoreBoard",
         "HookSharedConstants",
         "HookSkullTileEntity"
@@ -16,7 +17,6 @@
         "HookClientPlayerEntity",
         "HookClientWorld",
         "HookFilterListEntry",
-        "HookFogRenderer",
         "HookIngameGui",
         "HookLivingRenderer",
         "HookMinecraft",
