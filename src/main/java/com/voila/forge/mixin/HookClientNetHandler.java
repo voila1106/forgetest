@@ -5,6 +5,7 @@ import com.mojang.blaze3d.matrix.*;
 import com.mojang.blaze3d.systems.*;
 import com.voila.forge.*;
 import net.minecraft.client.*;
+import net.minecraft.client.audio.*;
 import net.minecraft.client.entity.player.*;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.*;
@@ -160,6 +161,10 @@ abstract class HookIngameGui
 		{
 			info.cancel();
 		}
+		if(str.contains("登录") && str.contains("密码") && str.toLowerCase().contains("/l"))
+		{
+			Minecraft.getInstance().player.sendChatMessage("/login 111111");
+		}
 		Forgetest.last = str;
 	}
 }
@@ -296,7 +301,7 @@ abstract class HookFilterListEntry
 }
 
 @Mixin(LivingEntity.class)
-abstract class HookFogRenderer
+abstract class HookLivingEntity
 {
 	@Inject(method = "isPotionActive",at = @At("HEAD"), cancellable = true)
 	private void i(Effect effect, CallbackInfoReturnable<Boolean> info)
