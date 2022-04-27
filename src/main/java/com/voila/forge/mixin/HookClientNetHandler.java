@@ -3,7 +3,9 @@ package com.voila.forge.mixin;
 import com.mojang.authlib.*;
 import com.mojang.blaze3d.matrix.*;
 import com.mojang.blaze3d.systems.*;
+import com.mojang.blaze3d.vertex.*;
 import com.voila.forge.*;
+import net.minecraft.block.*;
 import net.minecraft.client.*;
 import net.minecraft.client.audio.*;
 import net.minecraft.client.entity.player.*;
@@ -16,6 +18,8 @@ import net.minecraft.client.network.play.*;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.*;
+import net.minecraft.client.renderer.model.*;
+import net.minecraft.client.renderer.tileentity.*;
 import net.minecraft.client.world.*;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.*;
@@ -27,9 +31,11 @@ import net.minecraft.scoreboard.*;
 import net.minecraft.server.management.*;
 import net.minecraft.tileentity.*;
 import net.minecraft.util.*;
+import net.minecraft.util.math.*;
 import net.minecraft.util.text.*;
 import net.minecraft.world.*;
 import net.minecraft.world.biome.*;
+import net.minecraftforge.client.model.data.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
@@ -131,6 +137,12 @@ abstract class HookLivingRenderer
 		}
 		hs.put(entity.hashCode(), health);
 	}
+
+	@Inject(method = "canRenderName(Lnet/minecraft/entity/LivingEntity;)Z",at = @At("HEAD"),cancellable = true)
+	private void t(LivingEntity entity, CallbackInfoReturnable<Boolean> info)
+	{
+		info.setReturnValue(true);
+	}
 }
 
 /**
@@ -214,6 +226,7 @@ abstract class HookSkullTileEntity
 	@Shadow
 	private static PlayerProfileCache profileCache;
 
+	//TODO: change hook point
 	@Inject(method = "updateGameProfile", at = @At(value = "INVOKE",
 		target = "Lcom/mojang/authlib/minecraft/MinecraftSessionService;fillProfileProperties(Lcom/mojang/authlib/GameProfile;Z)Lcom/mojang/authlib/GameProfile;"),
 		cancellable = true)
@@ -310,4 +323,34 @@ abstract class HookLivingEntity
 			info.setReturnValue(false);
 	}
 
+	@Inject(method = "getAlwaysRenderNameTagForRender",at = @At("HEAD"),cancellable = true)
+	private void t(CallbackInfoReturnable<Boolean> info)
+	{
+		info.setReturnValue(true);
+	}
+
+}
+
+@Mixin(EntityRenderer.class)
+abstract class HookEntityRenderer
+{
+	@Inject(method = "renderName",at = @At("HEAD"))
+	private void i(Entity entityIn, ITextComponent nameIn, MatrixStack matrixStack, IRenderTypeBuffer buffer, int packedLight, CallbackInfo ci)
+	{
+		if(!(entityIn instanceof LivingEntity) || !(nameIn instanceof IFormattableTextComponent))
+			return;
+		LivingEntity living=(LivingEntity)entityIn;
+		IFormattableTextComponent name=(IFormattableTextComponent)nameIn;
+		float health=living.getHealth();
+		int maxHealth=(int)living.getMaxHealth();
+		String healthText;
+		if(health/maxHealth>=0.66)
+			healthText=" "+TextFormatting.GREEN+String.format("%.2f",health)+" / "+maxHealth;
+		else if(health/maxHealth>=0.33)
+			healthText=" "+TextFormatting.GOLD+String.format("%.2f",health)+" / "+maxHealth;
+		else
+			healthText=" "+TextFormatting.RED+String.format("%.2f",health)+" / "+maxHealth;
+		name.appendSibling(new StringTextComponent(healthText));
+		nameIn=name;
+	}
 }

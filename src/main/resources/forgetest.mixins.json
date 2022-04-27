@@ -6,6 +6,8 @@
     "refmap": "forge.refmap.json",
     "mixins": [
         "HookBiome",
+        "HookBlock",
+        "HookBlockRenderer",
         "HookClientNetHandler",
         "HookGameRenderer",
         "HookLivingEntity",
@@ -16,12 +18,14 @@
     "client": [
         "HookClientPlayerEntity",
         "HookClientWorld",
+        "HookEntityRenderer",
         "HookFilterListEntry",
         "HookIngameGui",
         "HookLivingRenderer",
         "HookMinecraft",
         "HookParticleManager",
-        "HookPlayerController"
+        "HookPlayerController",
+        "HookTileEntityRenderer"
     ],
     "injectors": {
         "defaultRequire": 1
