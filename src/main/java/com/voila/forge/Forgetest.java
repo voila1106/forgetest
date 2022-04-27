@@ -58,7 +58,7 @@ public class Forgetest
 
 		// Register ourselves for server and other game events we are interested in
 		MinecraftForge.EVENT_BUS.register(this);
-		MinecraftForge.EVENT_BUS.register(FlyKey.class);
+		MinecraftForge.EVENT_BUS.register(Keys.class);
 	}
 
 	private void setup(final FMLCommonSetupEvent event)
@@ -72,7 +72,7 @@ public class Forgetest
 	{
 		// do something that can only be done on the client
 		LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
-		FlyKey.init();
+		Keys.init();
 	}
 
 	private void enqueueIMC(final InterModEnqueueEvent event)

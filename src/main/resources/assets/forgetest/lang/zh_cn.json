@@ -2,5 +2,6 @@
     "item.forgetest.dummy": "啥都没有",
     "key.forgetest.flySpeedUp": "飞行加速",
     "key.forgetest.flySpeedDown": "飞行减速",
-    "key.forgetest.toggleFly": "飞行开关"
+    "key.forgetest.toggleFly": "飞行开关",
+    "key.forgetest.light": "夜视"
 }
