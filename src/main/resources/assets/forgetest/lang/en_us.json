@@ -3,5 +3,10 @@
     "key.forgetest.flySpeedUp": "Fly speed up",
     "key.forgetest.flySpeedDown": "Fly speed down",
     "key.forgetest.toggleFly": "toggle fly",
-    "key.forgetest.light": "toggle night vision"
+    "key.forgetest.light": "toggle night vision",
+    "key.forgetest.xray": "toggle xray",
+    "key.forgetest.configXray": "config xray",
+    "title.forgetest.configXray": "Xray Config",
+    "title.forgetest.save": "Done",
+    "title.forgetest.add": "Add"
 }

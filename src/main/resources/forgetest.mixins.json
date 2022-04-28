@@ -7,7 +7,7 @@
     "mixins": [
         "HookBiome",
         "HookBlock",
-        "HookBlockRenderer",
+        "HookBlockState",
         "HookClientNetHandler",
         "HookGameRenderer",
         "HookLivingEntity",
@@ -20,12 +20,14 @@
         "HookClientWorld",
         "HookEntityRenderer",
         "HookFilterListEntry",
+        "HookFluidBlockRenderer",
         "HookIngameGui",
         "HookLivingRenderer",
         "HookMinecraft",
         "HookParticleManager",
         "HookPlayerController",
-        "HookTileEntityRenderer"
+        "HookTileEntityRenderer",
+        "HookWorldRenderer"
     ],
     "injectors": {
         "defaultRequire": 1

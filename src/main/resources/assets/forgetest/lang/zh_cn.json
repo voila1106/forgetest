@@ -3,5 +3,10 @@
     "key.forgetest.flySpeedUp": "飞行加速",
     "key.forgetest.flySpeedDown": "飞行减速",
     "key.forgetest.toggleFly": "飞行开关",
-    "key.forgetest.light": "夜视"
+    "key.forgetest.light": "夜视",
+    "key.forgetest.xray": "透视",
+    "key.forgetest.configXray": "配置透视",
+    "title.forgetest.configXray": "透视配置",
+    "title.forgetest.save": "完成",
+    "title.forgetest.add": "添加"
 }
