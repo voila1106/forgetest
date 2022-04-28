@@ -110,6 +110,8 @@ public class ConfigXrayScreen extends Screen
 		Set<Block> set = new HashSet<>();
 		try
 		{
+			new File("config/" + Forgetest.ID).mkdirs();
+			new File("config/" + Forgetest.ID + "/xray.txt").createNewFile();
 			BufferedReader br = new BufferedReader(new FileReader("config/" + Forgetest.ID + "/xray.txt"));
 			String line;
 			while((line = br.readLine()) != null)
