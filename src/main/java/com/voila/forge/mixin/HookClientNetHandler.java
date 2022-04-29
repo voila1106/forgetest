@@ -18,6 +18,7 @@ import net.minecraft.client.multiplayer.*;
 import net.minecraft.client.network.play.*;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.chunk.*;
 import net.minecraft.client.renderer.culling.*;
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.tileentity.*;
@@ -42,6 +43,7 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
 import javax.annotation.*;
+import java.lang.annotation.*;
 import java.util.*;
 
 @Mixin(ClientPlayNetHandler.class)
@@ -110,6 +112,7 @@ abstract class HookLivingRenderer
 	private Map<Integer, Float> hs = new HashMap<>();
 	private World world;
 
+	@fold
 	@Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;I)V", at = @At("HEAD"))
 	private void r(LivingEntity entity, float yaw, float ticks, MatrixStack stack, IRenderTypeBuffer buffer, int light, CallbackInfo info)
 	{
@@ -342,6 +345,9 @@ abstract class HookFilterListEntry
 @Mixin(LivingEntity.class)
 abstract class HookLivingEntity
 {
+	/**
+	 * ignore blindness effect
+	 * */
 	@Inject(method = "isPotionActive", at = @At("HEAD"), cancellable = true)
 	private void i(Effect effect, CallbackInfoReturnable<Boolean> info)
 	{
@@ -349,6 +355,9 @@ abstract class HookLivingEntity
 			info.setReturnValue(false);
 	}
 
+	/**
+	 * always render name tag to display health value
+	 * */
 	@Inject(method = "getAlwaysRenderNameTagForRender", at = @At("HEAD"), cancellable = true)
 	private void t(CallbackInfoReturnable<Boolean> info)
 	{
@@ -357,6 +366,9 @@ abstract class HookLivingEntity
 
 }
 
+/**
+ * show health
+ * */
 @Mixin(EntityRenderer.class)
 abstract class HookEntityRenderer
 {
@@ -381,6 +393,9 @@ abstract class HookEntityRenderer
 	}
 }
 
+/**
+ * Xray block
+ * */
 @Mixin(AbstractBlock.AbstractBlockState.class)
 abstract class HookBlockState
 {
@@ -412,9 +427,24 @@ abstract class HookBlockState
 	}
 }
 
+/**
+ * Xray Tile Entity
+ * */
 @Mixin(TileEntityRendererDispatcher.class)
 abstract class HookTileEntityRenderer
 {
+	@Shadow @Nullable public abstract <E extends TileEntity> TileEntityRenderer<E> getRenderer(E tileEntityIn);
+
+	@Shadow
+	private static void runCrashReportable(TileEntity tileEntityIn, Runnable runnableIn)
+	{
+	}
+
+	@Shadow
+	private static <T extends TileEntity> void render(TileEntityRenderer<T> rendererIn, T tileEntityIn, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn)
+	{
+	}
+
 	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
 	private static void i(TileEntityRenderer<TileEntity> renderer,
 						  TileEntity tileEntity,
@@ -431,8 +461,31 @@ abstract class HookTileEntityRenderer
 			}
 		}
 	}
+
+	/**
+	 * ignore render distance when xray enabled
+	 * */
+	@Inject(method = "renderTileEntity",at = @At("HEAD"),cancellable = true)
+	private <E extends TileEntity> void t(E tileEntityIn, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, CallbackInfo info)
+	{
+		if(Keys.xray)
+			info.cancel();
+		else
+			return;
+		TileEntityRenderer<E> tileentityrenderer = this.getRenderer(tileEntityIn);
+		if (tileentityrenderer != null) {
+			if (tileEntityIn.hasWorld() && tileEntityIn.getType().isValidBlock(tileEntityIn.getBlockState().getBlock())) {
+				runCrashReportable(tileEntityIn, () -> {
+					render(tileentityrenderer, tileEntityIn, partialTicks, matrixStackIn, bufferIn);
+				});
+			}
+		}
+	}
 }
 
+/**
+ * Xray Fluid
+ * */
 @Mixin(FluidBlockRenderer.class)
 abstract class HookFluidBlockRenderer
 {
@@ -449,20 +502,28 @@ abstract class HookFluidBlockRenderer
 	}
 }
 
-@Mixin(Block.class)
-abstract class HookBlock
+/**
+ * compatible with OptiFine
+ * */
+@Mixin(ChunkRenderDispatcher.ChunkRender.RebuildTask.class)
+abstract class HookChunkRender
 {
-	@Inject(method = "shouldSideBeRendered", at = @At("HEAD"), cancellable = true)
-	private static void i(BlockState blockState, IBlockReader reader, BlockPos pos, Direction dir, CallbackInfoReturnable<Boolean> info)
+	//render model arg
+	@fold
+	@ModifyArg(method = "compile",at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/BlockRendererDispatcher;renderModel(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/IBlockDisplayReader;Lcom/mojang/blaze3d/matrix/MatrixStack;Lcom/mojang/blaze3d/vertex/IVertexBuilder;ZLjava/util/Random;Lnet/minecraftforge/client/model/data/IModelData;)Z"),index = 5)
+	public boolean renderModel(boolean checkSides)
 	{
 		if(Keys.xray)
-			info.setReturnValue(true);
+			return false;
+		return checkSides;
 	}
 }
 
 @Mixin(WorldRenderer.class)
 abstract class HookWorldRenderer
 {
+	//setupTerrain arg
+	@fold
 	@ModifyArg(method = "updateCameraAndRender",at = @At(value = "INVOKE",target = "Lnet/minecraft/client/renderer/WorldRenderer;setupTerrain(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lnet/minecraft/client/renderer/culling/ClippingHelper;ZIZ)V"),index = 4)
 	private boolean d(ActiveRenderInfo activeRenderInfoIn, ClippingHelper camera, boolean debugCamera, int frameCount, boolean playerSpectator)
 	{
@@ -472,3 +533,11 @@ abstract class HookWorldRenderer
 			return playerSpectator;
 	}
 }
+
+/**
+ * make no sense, just make IDE can fold annotations to hide long sentence
+ * */
+@Target({ ElementType.METHOD })
+@Retention(RetentionPolicy.SOURCE)
+@interface fold
+{}

@@ -6,7 +6,6 @@
     "refmap": "forge.refmap.json",
     "mixins": [
         "HookBiome",
-        "HookBlock",
         "HookBlockState",
         "HookClientNetHandler",
         "HookGameRenderer",
@@ -16,6 +15,7 @@
         "HookSkullTileEntity"
     ],
     "client": [
+        "HookChunkRender",
         "HookClientPlayerEntity",
         "HookClientWorld",
         "HookEntityRenderer",
