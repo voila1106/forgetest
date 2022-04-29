@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.tileentity.*;
 import net.minecraft.client.world.*;
 import net.minecraft.entity.*;
+import net.minecraft.entity.ai.attributes.*;
 import net.minecraft.entity.player.*;
 import net.minecraft.fluid.*;
 import net.minecraft.inventory.container.*;
@@ -531,6 +532,46 @@ abstract class HookWorldRenderer
 			return true;
 		else
 			return playerSpectator;
+	}
+}
+
+/**
+ * speed doesn't effect fov
+ * */
+@Mixin(AbstractClientPlayerEntity.class)
+abstract class HookAbsClientPlayer extends PlayerEntity
+{
+	private HookAbsClientPlayer(World p_i241920_1_, BlockPos p_i241920_2_, float p_i241920_3_, GameProfile p_i241920_4_)
+	{
+		super(p_i241920_1_, p_i241920_2_, p_i241920_3_, p_i241920_4_);
+	}
+
+	@Inject(method = "getFovModifier",at = @At("HEAD"),cancellable = true)
+	private void i(CallbackInfoReturnable<Float> info)
+	{
+		float f = 1.0F;
+		if (this.abilities.isFlying) {
+			f *= 1.1F;
+		}
+
+		f = (float)((double)f * (((isSprinting()?0.13:0.1) / 0.1 + 1.0D) / 2.0D));
+		if (this.abilities.getWalkSpeed() == 0.0F || Float.isNaN(f) || Float.isInfinite(f)) {
+			f = 1.0F;
+		}
+
+		if (this.isHandActive() && this.getActiveItemStack().getItem() == Items.BOW) {
+			int i = this.getItemInUseMaxCount();
+			float f1 = (float)i / 20.0F;
+			if (f1 > 1.0F) {
+				f1 = 1.0F;
+			} else {
+				f1 = f1 * f1;
+			}
+
+			f *= 1.0F - f1 * 0.15F;
+		}
+		float fov=net.minecraftforge.client.ForgeHooksClient.getOffsetFOV(this, f);
+		info.setReturnValue(fov);
 	}
 }
 

@@ -15,6 +15,7 @@
         "HookSkullTileEntity"
     ],
     "client": [
+        "HookAbsClientPlayer",
         "HookChunkRender",
         "HookClientPlayerEntity",
         "HookClientWorld",
