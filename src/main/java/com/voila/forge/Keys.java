@@ -72,7 +72,7 @@ public class Keys
 		}
 		if(lightKey.isPressed())
 		{
-			Minecraft.getInstance().gameSettings.gamma = Minecraft.getInstance().gameSettings.gamma > 1d ? 1 : 30;
+			Minecraft.getInstance().gameSettings.gamma = Minecraft.getInstance().gameSettings.gamma > 0.5 ? 0.5 : 30;
 		}
 		if(xrayKey.isPressed())
 		{
@@ -80,14 +80,6 @@ public class Keys
 		}
 		if(configXrayKey.isPressed())
 		{
-//			try
-//			{
-//				Runtime.getRuntime().exec("cmd /c "+new File("config/"+Forgetest.ID+"/xray.txt").getAbsolutePath());
-//			}catch(IOException e)
-//			{
-//				e.printStackTrace();
-//			}
-
 			Minecraft mc = Minecraft.getInstance();
 			if(mc.currentScreen == null)
 			{
