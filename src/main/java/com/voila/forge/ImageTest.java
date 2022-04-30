@@ -1,5 +1,6 @@
 package com.voila.forge;
 
+import com.mojang.util.*;
 import net.minecraft.client.renderer.texture.*;
 
 import java.io.*;
@@ -52,11 +53,6 @@ public class ImageTest
 
 				f.write(new File("f\\"+(""+i)+".png"));
 			}
-
-
-
-
-
 		}catch(Exception e)
 		{
 			e.printStackTrace();
