@@ -10,8 +10,6 @@ import net.minecraft.entity.player.*;
 import net.minecraft.util.*;
 import net.minecraft.util.text.*;
 
-import java.lang.reflect.*;
-
 public class SwitchAccountScreen extends Screen
 {
 	private static Session origSession;
@@ -60,9 +58,7 @@ public class SwitchAccountScreen extends Screen
 				String token = tokenField.getText();
 				if(token.isEmpty())
 					token = uuid;
-				Field sessionField = Minecraft.class.getDeclaredField("session");
-				sessionField.setAccessible(true);
-				sessionField.set(Minecraft.getInstance(), new Session(username, uuid, token, "mojang"));
+				Minecraft.getInstance().session = new Session(username, uuid, token, "mojang");
 				error = "";
 			}catch(Exception e)
 			{
@@ -76,9 +72,7 @@ public class SwitchAccountScreen extends Screen
 		{
 			try
 			{
-				Field sessionField = Minecraft.class.getDeclaredField("session");
-				sessionField.setAccessible(true);
-				sessionField.set(Minecraft.getInstance(), origSession);
+				Minecraft.getInstance().session = origSession;
 				error = "";
 			}catch(Exception e)
 			{
@@ -89,10 +83,7 @@ public class SwitchAccountScreen extends Screen
 
 		addButton(new Button((width - buttonWidth) / 2, height - 32, fieldWidth / 2, 20,
 			new TranslationTextComponent("title." + Forgetest.ID + ".save"), button ->
-		{
-			Minecraft.getInstance().displayGuiScreen(parent);
-		}));
-
+			Minecraft.getInstance().displayGuiScreen(parent)));
 	}
 
 	@Override
