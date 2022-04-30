@@ -83,6 +83,7 @@ public class ConfigXrayScreen extends Screen
 		children.add(addField);
 		addButton(addButton);
 		addButton(saveButton);
+		addField.setFocused2(true);
 		blockList.updateEntry();
 		super.init();
 	}
@@ -214,4 +215,9 @@ public class ConfigXrayScreen extends Screen
 
 	}
 
+	@Override
+	public boolean isPauseScreen()
+	{
+		return false;
+	}
 }
