@@ -199,9 +199,9 @@ public class ConfigXrayScreen extends Screen
 			public void render(MatrixStack matrixStack, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean isMouseOver, float partialTicks)
 			{
 				FontRenderer fontRenderer = Minecraft.getInstance().fontRenderer;
-				//fontRenderer.drawString(matrixStack, block, left + 200, top, 0xffffff);
-				//drawString(matrixStack,font,block,index,10,0xffffff);
 				AbstractGui.drawString(matrixStack, fontRenderer, block.getTranslatedName(), left, top + 5, 16777215);
+				if(isMouseOver)
+					renderTooltip(matrixStack, new StringTextComponent(block.getRegistryName().toString()), mouseX, mouseY);
 			}
 
 			@Override
