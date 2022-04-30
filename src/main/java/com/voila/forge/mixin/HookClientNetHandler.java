@@ -24,7 +24,6 @@ import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.tileentity.*;
 import net.minecraft.client.world.*;
 import net.minecraft.entity.*;
-import net.minecraft.entity.ai.attributes.*;
 import net.minecraft.entity.player.*;
 import net.minecraft.fluid.*;
 import net.minecraft.inventory.container.*;
@@ -570,15 +569,55 @@ abstract class HookAbsClientPlayer extends PlayerEntity
 
 			f *= 1.0F - f1 * 0.15F;
 		}
-		float fov=net.minecraftforge.client.ForgeHooksClient.getOffsetFOV(this, f);
+		float fov = net.minecraftforge.client.ForgeHooksClient.getOffsetFOV(this, f);
 		info.setReturnValue(fov);
+	}
+}
+
+@Mixin(MainMenuScreen.class)
+abstract class HookMainMenu extends Screen
+{
+
+	private HookMainMenu(ITextComponent title)
+	{
+		super(title);
+	}
+
+	@Inject(method = "init", at = @At("TAIL"))
+	private void i(CallbackInfo info)
+	{
+		Button optionButton = null;
+		for(IGuiEventListener t : children)
+		{
+			if(t instanceof Button)
+			{
+				Button b = (Button)t;
+				if(new TranslationTextComponent("menu.options").equals(b.getMessage()))
+				{
+					optionButton = b;
+					break;
+				}
+			}
+		}
+		if(optionButton == null)
+		{
+			System.out.println("button not found");
+			return;
+		}
+		Button switchButton = new Button(optionButton.x, optionButton.y + 24, optionButton.getWidth(), optionButton.getHeight(),
+			new TranslationTextComponent("menu." + Forgetest.ID + ".switchAccount"),
+			button -> Minecraft.getInstance().displayGuiScreen(new SwitchAccountScreen(this)));
+
+		addButton(switchButton);
+
 	}
 }
 
 /**
  * make no sense, just make IDE can fold annotations to hide long sentence
- * */
-@Target({ ElementType.METHOD })
+ */
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
 @interface fold
-{}
+{
+}

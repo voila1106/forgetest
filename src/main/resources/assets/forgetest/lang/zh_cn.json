@@ -8,5 +8,12 @@
     "key.forgetest.configXray": "配置透视",
     "title.forgetest.configXray": "透视配置",
     "title.forgetest.save": "完成",
-    "title.forgetest.add": "添加"
+    "title.forgetest.add": "添加",
+    "menu.forgetest.switchAccount": "切换账户",
+    "title.forgetest.switch": "切换",
+    "title.forgetest.restore": "恢复",
+    "title.forgetest.username": "用户名",
+    "title.forgetest.uuid": "UUID",
+    "title.forgetest.token": "Token",
+    "title.forgetest.current": "当前用户名: "
 }

@@ -8,5 +8,12 @@
     "key.forgetest.configXray": "config xray",
     "title.forgetest.configXray": "Xray Config",
     "title.forgetest.save": "Done",
-    "title.forgetest.add": "Add"
+    "title.forgetest.add": "Add",
+    "menu.forgetest.switchAccount": "Switch Account",
+    "title.forgetest.switch": "Switch",
+    "title.forgetest.restore": "Restore",
+    "title.forgetest.username": "User Name",
+    "title.forgetest.uuid": "UUID",
+    "title.forgetest.token": "Token",
+    "title.forgetest.current": "Current username: "
 }
