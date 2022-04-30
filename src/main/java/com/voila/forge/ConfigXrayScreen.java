@@ -8,9 +8,8 @@ import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.widget.*;
 import net.minecraft.client.gui.widget.button.*;
-import net.minecraft.client.gui.widget.list.*;
 import net.minecraft.client.gui.widget.list.AbstractList;
-import net.minecraft.item.*;
+import net.minecraft.client.gui.widget.list.*;
 import net.minecraft.util.*;
 import net.minecraft.util.text.*;
 import net.minecraftforge.registries.*;
@@ -219,5 +218,12 @@ public class ConfigXrayScreen extends Screen
 	public boolean isPauseScreen()
 	{
 		return false;
+	}
+
+	@Override
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers)
+	{
+		setListener(addField);
+		return super.keyPressed(keyCode, scanCode, modifiers);
 	}
 }
