@@ -28,6 +28,7 @@
         "HookMinecraft",
         "HookParticleManager",
         "HookPlayerController",
+        "HookRecipeBookGui",
         "HookTileEntityRenderer",
         "HookWorldRenderer"
     ],
