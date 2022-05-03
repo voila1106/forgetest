@@ -21,6 +21,7 @@ public class Script {
 	private final Map<Integer, List<Runnable>> tasks = new HashMap<>();
 	private Map<Integer, List<Runnable>> running = new HashMap<>();
 	private int ticks = 1;
+	public int waitTicks = 0;
 
 
 	public Script(String[] commands){
@@ -75,6 +76,7 @@ public class Script {
 					try{
 						if(cmd.startsWith("wait")){
 							ticks += Integer.parseInt(cmd.substring(5));
+							put(ticks, () -> waitTicks = 0);
 						}else if(cmd.startsWith("pitch")){
 							put(ticks, () -> player.rotationPitch = Float.parseFloat(cmd.substring(6)));
 						}else if(cmd.startsWith("yaw")){
@@ -136,6 +138,8 @@ public class Script {
 			}
 		}
 		running = map;
+		if(Keys.script)
+			waitTicks++;
 	}
 
 	public void cancel(){

@@ -11,6 +11,7 @@ import net.minecraft.block.*;
 import net.minecraft.client.*;
 import net.minecraft.client.entity.player.*;
 import net.minecraft.client.gui.*;
+import net.minecraft.client.gui.overlay.*;
 import net.minecraft.client.gui.recipebook.*;
 import net.minecraft.client.gui.screen.*;
 import net.minecraft.client.gui.social.*;
@@ -589,6 +590,19 @@ abstract class HookMovement {
 			Keys.runningScript.jump && key == settings.keyBindJump ||
 			Keys.runningScript.crouch && key == settings.keyBindSneak){
 			info.setReturnValue(true);
+		}
+	}
+}
+
+@Mixin(DebugOverlayGui.class)
+abstract class HookDebugGui extends AbstractGui {
+	@Inject(method = "getDebugInfoLeft", at = @At("RETURN"), cancellable = true)
+	private void i(CallbackInfoReturnable<List<String>> info){
+		if(Keys.script){
+			List<String> list = info.getReturnValue();
+			String str = "Script waitTicks: " + Keys.runningScript.waitTicks;
+			list.add(str);
+			info.setReturnValue(list);
 		}
 	}
 }

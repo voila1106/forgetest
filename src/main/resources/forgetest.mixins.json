@@ -19,6 +19,7 @@
         "HookChunkRender",
         "HookClientPlayerEntity",
         "HookClientWorld",
+        "HookDebugGui",
         "HookEntityRenderer",
         "HookFilterListEntry",
         "HookFluidBlockRenderer",
