@@ -29,18 +29,16 @@ import java.util.stream.*;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("forgetest")
-public class Forgetest
-{
+public class Forgetest {
 	public static String ID = "forgetest";
-	private static Map<Integer, Runnable> delayedTask = new HashMap<>();
+	private static Map<Integer, List<Runnable>> delayedTask = new HashMap<>();
 
 	// Directly reference a log4j logger.
 	private static final Logger LOGGER = LogManager.getLogger();
 
 	public static String last;
 
-	public Forgetest()
-	{
+	public Forgetest(){
 		// Register the setup method for modloading
 		IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
@@ -61,22 +59,19 @@ public class Forgetest
 		MinecraftForge.EVENT_BUS.register(Keys.class);
 	}
 
-	private void setup(final FMLCommonSetupEvent event)
-	{
+	private void setup(final FMLCommonSetupEvent event){
 		// some preinit code
 		LOGGER.info("HELLO FROM PREINIT");
 		LOGGER.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
 	}
 
-	private void doClientStuff(final FMLClientSetupEvent event)
-	{
+	private void doClientStuff(final FMLClientSetupEvent event){
 		// do something that can only be done on the client
 		LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
 		Keys.init();
 	}
 
-	private void enqueueIMC(final InterModEnqueueEvent event)
-	{
+	private void enqueueIMC(final InterModEnqueueEvent event){
 		// some example code to dispatch IMC to another mod
 		InterModComms.sendTo("forgetest", "helloworld", () ->
 		{
@@ -85,8 +80,7 @@ public class Forgetest
 		});
 	}
 
-	private void processIMC(final InterModProcessEvent event)
-	{
+	private void processIMC(final InterModProcessEvent event){
 		// some example code to receive and process InterModComms from other mods
 		LOGGER.info("Got IMC {}", event.getIMCStream().
 			map(m -> m.getMessageSupplier().get()).
@@ -95,8 +89,7 @@ public class Forgetest
 
 	// You can use SubscribeEvent and let the Event Bus discover methods to call
 	@SubscribeEvent
-	public void onServerStarting(FMLServerStartingEvent event)
-	{
+	public void onServerStarting(FMLServerStartingEvent event){
 		// do something when the server starts
 		LOGGER.info("HELLO from server starting");
 	}
@@ -104,22 +97,18 @@ public class Forgetest
 	// You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD
 	// Event bus for receiving Registry Events)
 	@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
-	public static class RegistryEvents
-	{
+	public static class RegistryEvents {
 		@SubscribeEvent
-		public static void onBlocksRegistry(final RegistryEvent.Register<Block> blockRegistryEvent)
-		{
+		public static void onBlocksRegistry(final RegistryEvent.Register<Block> blockRegistryEvent){
 			// register a new block here
 			LOGGER.info("HELLO from Register Block");
 		}
 	}
 
 	@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-	public static class RegisterParticle
-	{
+	public static class RegisterParticle {
 		@SubscribeEvent
-		public static void onParticleRegistry(ParticleFactoryRegisterEvent event)
-		{
+		public static void onParticleRegistry(ParticleFactoryRegisterEvent event){
 			Minecraft.getInstance().particles.registerFactory(TestItem.damage.get(), DamageParticle.Factory::new);
 		}
 	}
@@ -128,29 +117,24 @@ public class Forgetest
 	 * remove burning and underwater overlay
 	 */
 	@SubscribeEvent
-	public void onOverlay(RenderBlockOverlayEvent event)
-	{
+	public void onOverlay(RenderBlockOverlayEvent event){
 		if(event.getOverlayType() != RenderBlockOverlayEvent.OverlayType.BLOCK)
 			event.setCanceled(true);
 	}
 
 	@SubscribeEvent
-	public void onInteractEntity(PlayerInteractEvent.EntityInteract event)
-	{
+	public void onInteractEntity(PlayerInteractEvent.EntityInteract event){
 		if(event.getTarget() instanceof PlayerEntity)
 			checkInv(event.getTarget(), true);
 	}
 
-	public static void checkInv(Entity target, boolean fromEvent)
-	{
+	public static void checkInv(Entity target, boolean fromEvent){
 		ClientPlayerEntity me = Minecraft.getInstance().player;
-		if(me == null || !(target instanceof PlayerEntity))
-		{
+		if(me == null || !(target instanceof PlayerEntity)){
 			sendMessage(TextFormatting.RED + "玩家无效");
 			return;
 		}
-		if(fromEvent && !me.isSneaking())
-		{
+		if(fromEvent && !me.isSneaking()){
 			return;
 		}
 		PlayerEntity player = (PlayerEntity)target;
@@ -159,8 +143,7 @@ public class Forgetest
 		Container container = me.openContainer;
 		ItemStack frame = Items.GRAY_STAINED_GLASS_PANE.getDefaultInstance().setDisplayName(StringTextComponent.EMPTY);
 		frame.setTagInfo("isFrame", ByteNBT.valueOf(true));
-		for(Slot t : container.inventorySlots)
-		{
+		for(Slot t : container.inventorySlots){
 			container.putStackInSlot(t.getSlotIndex(), frame.copy());
 		}
 		container.putStackInSlot(1, frame.copy().setDisplayName(name("头盔")));
@@ -189,8 +172,7 @@ public class Forgetest
 
 	}
 
-	private static ITextComponent name(String str)
-	{
+	private static ITextComponent name(String str){
 		return ITextComponent.Serializer.getComponentFromJson("{\n" +
 			"    \"text\":\"" + str + "\",\n" +
 			"    \"italic\":false,\n" +
@@ -198,26 +180,20 @@ public class Forgetest
 			"}");
 	}
 
-	public static void sendMessage(String msg)
-	{
+	public static void sendMessage(String msg){
 		Minecraft.getInstance().ingameGUI.sendChatMessage(ChatType.SYSTEM, new StringTextComponent(msg), Util.DUMMY_UUID);
 	}
 
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
-	public void tick(TickEvent.PlayerTickEvent event)
-	{
+	public void tick(TickEvent.ClientTickEvent event){
 		if(event.phase == TickEvent.Phase.START)
 			return;
-		Map<Integer, Runnable> map = new HashMap<>();
-		for(int i : delayedTask.keySet())
-		{
-			if(i <= 0)
-			{
-				delayedTask.get(i).run();
-				delayedTask.remove(i);
-			}else
-			{
+		Map<Integer, List<Runnable>> map = new HashMap<>();
+		for(int i : delayedTask.keySet()){
+			if(i <= 0){
+				delayedTask.get(i).forEach(Runnable::run);
+			}else{
 				map.put(i - 1, delayedTask.get(i));
 			}
 
@@ -225,9 +201,19 @@ public class Forgetest
 		delayedTask = map;
 	}
 
-	public static void runDelay(int ticks, Runnable task)
-	{
-		delayedTask.put(ticks, task);
+	public static void runDelay(int ticks, Runnable task){
+//		delayedTask.put(ticks, task);
+		if(delayedTask.get(ticks) == null){
+			ArrayList<Runnable> list = new ArrayList<>();
+			list.add(task);
+			delayedTask.put(ticks, list);
+		}else{
+			delayedTask.get(ticks).add(task);
+		}
+	}
+
+	public static void runDelay(Map<Integer, List<Runnable>> task){
+		delayedTask.putAll(task);
 	}
 
 }
