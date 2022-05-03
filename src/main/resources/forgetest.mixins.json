@@ -26,6 +26,7 @@
         "HookLivingRenderer",
         "HookMainMenu",
         "HookMinecraft",
+        "HookMovement",
         "HookParticleManager",
         "HookPlayerController",
         "HookRecipeBookGui",

@@ -24,8 +24,10 @@ import net.minecraft.client.renderer.chunk.*;
 import net.minecraft.client.renderer.culling.*;
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.tileentity.*;
+import net.minecraft.client.settings.*;
 import net.minecraft.client.world.*;
 import net.minecraft.entity.*;
+import net.minecraft.entity.item.*;
 import net.minecraft.entity.player.*;
 import net.minecraft.fluid.*;
 import net.minecraft.inventory.container.*;
@@ -131,7 +133,8 @@ abstract class HookLivingRenderer {
 
 	@Inject(method = "canRenderName(Lnet/minecraft/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
 	private void t(LivingEntity entity, CallbackInfoReturnable<Boolean> info){
-		info.setReturnValue(true);
+		if(!(entity instanceof ArmorStandEntity))
+			info.setReturnValue(true);
 	}
 }
 
@@ -334,7 +337,7 @@ abstract class HookLivingEntity {
 abstract class HookEntityRenderer {
 	@Inject(method = "renderName", at = @At("HEAD"))
 	private void i(Entity entityIn, ITextComponent nameIn, MatrixStack matrixStack, IRenderTypeBuffer buffer, int packedLight, CallbackInfo ci){
-		if(!(entityIn instanceof LivingEntity) || !(nameIn instanceof IFormattableTextComponent))
+		if(!(entityIn instanceof LivingEntity) || !(nameIn instanceof IFormattableTextComponent) || (entityIn instanceof ArmorStandEntity))
 			return;
 		LivingEntity living = (LivingEntity)entityIn;
 		IFormattableTextComponent name = (IFormattableTextComponent)nameIn;
@@ -566,6 +569,27 @@ abstract class HookRecipeBookGui {
 	private void i(CallbackInfo info){
 		if(searchBar == null)
 			info.cancel();
+	}
+}
+
+//@SuppressWarnings("all")
+@Mixin(KeyBinding.class)
+abstract class HookMovement {
+	@Inject(method = "isKeyDown", at = @At("HEAD"), cancellable = true)
+	private void i(CallbackInfoReturnable<Boolean> info){
+		if(!Keys.script){
+			return;
+		}
+		Object key = this;
+		GameSettings settings = Minecraft.getInstance().gameSettings;
+		if(Keys.runningScript.forward && key == settings.keyBindForward ||
+			Keys.runningScript.backward && key == settings.keyBindBack ||
+			Keys.runningScript.left && key == settings.keyBindLeft ||
+			Keys.runningScript.right && key == settings.keyBindRight ||
+			Keys.runningScript.jump && key == settings.keyBindJump ||
+			Keys.runningScript.crouch && key == settings.keyBindSneak){
+			info.setReturnValue(true);
+		}
 	}
 }
 

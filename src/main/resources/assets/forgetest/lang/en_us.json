@@ -6,6 +6,7 @@
     "key.forgetest.light": "toggle night vision",
     "key.forgetest.xray": "toggle xray",
     "key.forgetest.configXray": "config xray",
+    "key.forgetest.script": "toggle script",
     "title.forgetest.configXray": "Xray Config",
     "title.forgetest.save": "Done",
     "title.forgetest.add": "Add",
