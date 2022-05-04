@@ -6,6 +6,7 @@
     "key.forgetest.light": "夜视",
     "key.forgetest.xray": "透视",
     "key.forgetest.configXray": "配置透视",
+    "key.forgetest.configScript": "配置脚本",
     "title.forgetest.configXray": "透视配置",
     "key.forgetest.script": "切换脚本运行",
     "title.forgetest.save": "完成",
@@ -16,5 +17,6 @@
     "title.forgetest.username": "用户名",
     "title.forgetest.uuid": "UUID",
     "title.forgetest.token": "Token",
-    "title.forgetest.current": "当前用户名: "
+    "title.forgetest.current": "当前用户名: ",
+    "title.forgetest.selectScript": "选择脚本"
 }

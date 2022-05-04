@@ -22,10 +22,10 @@ public class Keys {
 	public static KeyBinding xrayKey;
 	public static KeyBinding configXrayKey;
 	public static KeyBinding scriptKey;
+	public static KeyBinding configScriptKey;
 
 
 	public static boolean xray = false;
-	public static boolean script = false;
 	public static Set<Block> enabledBlocks = new HashSet<>();
 	public static Script runningScript;
 
@@ -39,6 +39,7 @@ public class Keys {
 		xrayKey = register("key." + Forgetest.ID + ".xray", 66, "key.categories.misc");
 		configXrayKey = register("key." + Forgetest.ID + ".configXray", GLFW.GLFW_KEY_H, "key.categories.misc");
 		scriptKey = register("key." + Forgetest.ID + ".script", GLFW.GLFW_KEY_Y, "key.categories.misc");
+		configScriptKey = register("key." + Forgetest.ID + ".configScript", GLFW.GLFW_KEY_K, "key.categories.misc");
 
 		new File("config/" + Forgetest.ID).mkdirs();
 	}
@@ -79,6 +80,9 @@ public class Keys {
 		if(scriptKey.isPressed()){
 			toggleScript();
 		}
+		if(configScriptKey.isPressed()){
+			Minecraft.getInstance().displayGuiScreen(new SelectScriptScreen());
+		}
 	}
 
 	private static void toggleXray(){
@@ -91,14 +95,14 @@ public class Keys {
 	}
 
 	private static void toggleScript(){
-		if(script){
+		if(Script.enabled){
 			runningScript.cancel();
 			return;
 		}
 		ArrayList<String> cmd = new ArrayList<>();
 		try{
 			new File("scripts").mkdirs();
-			File sc = new File("scripts/script.txt");
+			File sc = new File("scripts/" + Script.filename);
 			sc.createNewFile();
 			BufferedReader br = new BufferedReader(new FileReader(sc));
 			String line;

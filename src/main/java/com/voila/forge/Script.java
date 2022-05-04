@@ -17,11 +17,16 @@ public class Script {
 	public boolean right;
 	public boolean jump;
 	public boolean crouch;
+	// TODO: fix sneak not work
+	// TODO: add mouse operation
 
 	private final Map<Integer, List<Runnable>> tasks = new HashMap<>();
 	private Map<Integer, List<Runnable>> running = new HashMap<>();
 	private int ticks = 1;
 	public int waitTicks = 0;
+
+	public static boolean enabled = false;
+	public static String filename = "script.txt";
 
 
 	public Script(String[] commands){
@@ -61,10 +66,18 @@ public class Script {
 					put(ticks, () -> jump = false);
 					break;
 				case "+crouch":
-					put(ticks, () -> crouch = true);
+					put(ticks, () -> {
+						crouch = true;
+						Minecraft.getInstance().gameSettings.keyBindSneak.setPressed(true);
+						player.setSneaking(true);
+					});
 					break;
 				case "-crouch":
-					put(ticks, () -> crouch = false);
+					put(ticks, () -> {
+						crouch = false;
+						Minecraft.getInstance().gameSettings.keyBindSneak.setPressed(false);
+						player.setSneaking(false);
+					});
 					break;
 				case "+sprint":
 					put(ticks, () -> player.setSprinting(true));
@@ -72,7 +85,7 @@ public class Script {
 				case "-sprint":
 					put(ticks, () -> player.setSprinting(false));
 					break;
-				default:  //wait
+				default:
 					try{
 						if(cmd.startsWith("wait")){
 							ticks += Integer.parseInt(cmd.substring(5));
@@ -93,9 +106,9 @@ public class Script {
 	}
 
 	public Script run(){
-		Keys.script = true;
+		enabled = true;
 		runDelay(tasks);
-		runDelay(ticks, () -> Keys.script = false);
+		runDelay(ticks, () -> enabled = false);
 		return this;
 	}
 
@@ -138,13 +151,13 @@ public class Script {
 			}
 		}
 		running = map;
-		if(Keys.script)
+		if(enabled)
 			waitTicks++;
 	}
 
 	public void cancel(){
 		running.clear();
-		Keys.script = false;
+		enabled = false;
 	}
 
 }

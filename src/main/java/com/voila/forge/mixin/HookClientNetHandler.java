@@ -578,7 +578,7 @@ abstract class HookRecipeBookGui {
 abstract class HookMovement {
 	@Inject(method = "isKeyDown", at = @At("HEAD"), cancellable = true)
 	private void i(CallbackInfoReturnable<Boolean> info){
-		if(!Keys.script){
+		if(!Script.enabled){
 			return;
 		}
 		Object key = this;
@@ -598,7 +598,7 @@ abstract class HookMovement {
 abstract class HookDebugGui extends AbstractGui {
 	@Inject(method = "getDebugInfoLeft", at = @At("RETURN"), cancellable = true)
 	private void i(CallbackInfoReturnable<List<String>> info){
-		if(Keys.script){
+		if(Script.enabled){
 			List<String> list = info.getReturnValue();
 			String str = "Script waitTicks: " + Keys.runningScript.waitTicks;
 			list.add(str);

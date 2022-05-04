@@ -7,6 +7,7 @@
     "key.forgetest.xray": "toggle xray",
     "key.forgetest.configXray": "config xray",
     "key.forgetest.script": "toggle script",
+    "key.forgetest.configScript": "Config Scripts",
     "title.forgetest.configXray": "Xray Config",
     "title.forgetest.save": "Done",
     "title.forgetest.add": "Add",
@@ -16,5 +17,6 @@
     "title.forgetest.username": "User Name",
     "title.forgetest.uuid": "UUID",
     "title.forgetest.token": "Token",
-    "title.forgetest.current": "Current username: "
+    "title.forgetest.current": "Current username: ",
+    "title.forgetest.selectScript": "Select Script"
 }
