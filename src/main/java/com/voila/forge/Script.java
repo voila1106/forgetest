@@ -17,8 +17,8 @@ public class Script {
 	public boolean right;
 	public boolean jump;
 	public boolean crouch;
-	// TODO: fix sneak not work
-	// TODO: add mouse operation
+	public boolean use;
+	public boolean attack;
 
 	private final Map<Integer, List<Runnable>> tasks = new HashMap<>();
 	private Map<Integer, List<Runnable>> running = new HashMap<>();
@@ -84,6 +84,27 @@ public class Script {
 					break;
 				case "-sprint":
 					put(ticks, () -> player.setSprinting(false));
+					break;
+				case "+use":
+					put(ticks, () -> use = true);
+					break;
+				case "-use":
+					put(ticks, () -> use = false);
+					break;
+				case "use":
+					put(ticks, () -> ((IMinecraft)Minecraft.getInstance()).use());
+					break;
+				case "+attack":
+					put(ticks, () -> attack = true);
+					break;
+				case "-attack":
+					put(ticks, () -> attack = false);
+					break;
+				case "attack":
+					put(ticks, () -> ((IMinecraft)Minecraft.getInstance()).attack());
+					break;
+				case "pick":
+					put(ticks, () -> ((IMinecraft)Minecraft.getInstance()).pickBlock());
 					break;
 				default:
 					try{

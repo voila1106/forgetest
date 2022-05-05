@@ -173,10 +173,33 @@ abstract class HookIngameGui {
  * reset spam state
  */
 @Mixin(Minecraft.class)
-abstract class HookMinecraft {
+abstract class HookMinecraft implements IMinecraft {
 	@Shadow
-	@Nullable
 	public ClientPlayerEntity player;
+
+	@Shadow
+	protected abstract void middleClickMouse();
+
+	@Shadow
+	protected abstract void rightClickMouse();
+
+	@Shadow
+	protected abstract void clickMouse();
+
+	@Override
+	public void pickBlock(){
+		middleClickMouse();
+	}
+
+	@Override
+	public void use(){
+		rightClickMouse();
+	}
+
+	@Override
+	public void attack(){
+		clickMouse();
+	}
 
 	@Inject(method = "displayGuiScreen", at = @At("HEAD"), cancellable = true)
 	private void i(Screen guiScreenIn, CallbackInfo info){
@@ -588,7 +611,9 @@ abstract class HookMovement {
 			Keys.runningScript.left && key == settings.keyBindLeft ||
 			Keys.runningScript.right && key == settings.keyBindRight ||
 			Keys.runningScript.jump && key == settings.keyBindJump ||
-			Keys.runningScript.crouch && key == settings.keyBindSneak){
+			Keys.runningScript.crouch && key == settings.keyBindSneak ||
+			Keys.runningScript.use && key == settings.keyBindUseItem ||
+			Keys.runningScript.attack && key == settings.keyBindAttack){
 			info.setReturnValue(true);
 		}
 	}
