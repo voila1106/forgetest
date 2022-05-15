@@ -163,17 +163,28 @@ public class Script {
 	public void tick(TickEvent.ClientTickEvent event){
 		if(event.phase == TickEvent.Phase.START)
 			return;
+		if(!enabled)
+			return;
+		if(Minecraft.getInstance().player == null){
+			cancel();
+			return;
+		}
 		Map<Integer, List<Runnable>> map = new HashMap<>();
 		for(int i : running.keySet()){
 			if(i <= 0){
-				running.get(i).forEach(Runnable::run);
+				running.get(i).forEach(runnable -> {
+					try{
+						runnable.run();
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+				});
 			}else{
 				map.put(i - 1, running.get(i));
 			}
 		}
 		running = map;
-		if(enabled)
-			waitTicks++;
+		waitTicks++;
 	}
 
 	public void cancel(){

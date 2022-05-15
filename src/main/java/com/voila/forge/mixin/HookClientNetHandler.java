@@ -186,6 +186,9 @@ abstract class HookMinecraft implements IMinecraft {
 	@Shadow
 	protected abstract void clickMouse();
 
+	@Shadow
+	protected int leftClickCounter;
+
 	@Override
 	public void pickBlock(){
 		middleClickMouse();
@@ -203,6 +206,7 @@ abstract class HookMinecraft implements IMinecraft {
 
 	@Inject(method = "displayGuiScreen", at = @At("HEAD"), cancellable = true)
 	private void i(Screen guiScreenIn, CallbackInfo info){
+		// reset spam state
 		Forgetest.last = "";
 
 		//respawn immediately
@@ -210,6 +214,11 @@ abstract class HookMinecraft implements IMinecraft {
 			player.respawnPlayer();
 			info.cancel();
 		}
+	}
+
+	@Inject(method = "clickMouse", at = @At("HEAD"))
+	private void i(CallbackInfo info){
+		leftClickCounter = 0;
 	}
 }
 
@@ -598,7 +607,7 @@ abstract class HookRecipeBookGui {
 
 //@SuppressWarnings("all")
 @Mixin(KeyBinding.class)
-abstract class HookMovement {
+abstract class HookKeyBinding {
 	@Inject(method = "isKeyDown", at = @At("HEAD"), cancellable = true)
 	private void i(CallbackInfoReturnable<Boolean> info){
 		if(!Script.enabled){
