@@ -1,5 +1,6 @@
 package com.voila.forge;
 
+import com.mojang.blaze3d.platform.*;
 import com.mojang.util.*;
 import net.minecraft.client.renderer.texture.*;
 
@@ -51,7 +52,7 @@ public class ImageTest
 				}
 
 
-				f.write(new File("f\\"+(""+i)+".png"));
+				f.writeToFile(new File("f\\"+(""+i)+".png"));
 			}
 		}catch(Exception e)
 		{

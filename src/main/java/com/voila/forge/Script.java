@@ -1,8 +1,8 @@
 package com.voila.forge;
 
+import net.minecraft.*;
 import net.minecraft.client.*;
-import net.minecraft.client.entity.player.*;
-import net.minecraft.util.text.*;
+import net.minecraft.client.player.*;
 import net.minecraftforge.api.distmarker.*;
 import net.minecraftforge.common.*;
 import net.minecraftforge.event.*;
@@ -31,7 +31,7 @@ public class Script {
 
 	public Script(String[] commands){
 		MinecraftForge.EVENT_BUS.register(this);
-		ClientPlayerEntity player = Minecraft.getInstance().player;
+		LocalPlayer player = Minecraft.getInstance().player;
 		for(int i = 0; i < commands.length; i++){
 			String cmd = commands[i];
 			switch(cmd){
@@ -68,15 +68,15 @@ public class Script {
 				case "+crouch":
 					put(ticks, () -> {
 						crouch = true;
-						Minecraft.getInstance().gameSettings.keyBindSneak.setPressed(true);
-						player.setSneaking(true);
+						Minecraft.getInstance().options.keyShift.setDown(true);
+						player.setShiftKeyDown(true);
 					});
 					break;
 				case "-crouch":
 					put(ticks, () -> {
 						crouch = false;
-						Minecraft.getInstance().gameSettings.keyBindSneak.setPressed(false);
-						player.setSneaking(false);
+						Minecraft.getInstance().options.keyShift.setDown(false);
+						player.setShiftKeyDown(false);
 					});
 					break;
 				case "+sprint":
@@ -104,7 +104,7 @@ public class Script {
 					put(ticks, () -> ((IMinecraft)Minecraft.getInstance()).attack());
 					break;
 				case "pick":
-					put(ticks, () -> ((IMinecraft)Minecraft.getInstance()).pickBlock());
+					put(ticks, () -> ((IMinecraft)Minecraft.getInstance()).pick());
 					break;
 				default:
 					try{
@@ -112,11 +112,11 @@ public class Script {
 							ticks += Integer.parseInt(cmd.substring(5));
 							put(ticks, () -> waitTicks = 0);
 						}else if(cmd.startsWith("pitch")){
-							put(ticks, () -> player.rotationPitch = Float.parseFloat(cmd.substring(6)));
+							put(ticks, () -> player.setXRot(Float.parseFloat(cmd.substring(6))));
 						}else if(cmd.startsWith("yaw")){
-							put(ticks, () -> player.rotationYaw = Float.parseFloat(cmd.substring(4)));
+							put(ticks, () -> player.setYRot(Float.parseFloat(cmd.substring(4))));
 						}else if(!cmd.trim().isEmpty() && !cmd.startsWith("#") && !cmd.startsWith("\t")){
-							Forgetest.sendMessage(TextFormatting.GOLD + "Warning: Cannot resolve line " + (i + 1) + ": " + cmd);
+							Forgetest.sendMessage(ChatFormatting.GOLD + "Warning: Cannot resolve line " + (i + 1) + ": " + cmd);
 						}
 					}catch(Exception e){
 						throw new RuntimeException("Syntax error in line " + (i + 1));

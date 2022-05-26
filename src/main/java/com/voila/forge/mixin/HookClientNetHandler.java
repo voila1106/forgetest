@@ -1,48 +1,41 @@
 package com.voila.forge.mixin;
 
-import com.google.common.collect.*;
 import com.mojang.authlib.*;
-import com.mojang.authlib.minecraft.*;
-import com.mojang.authlib.properties.*;
-import com.mojang.blaze3d.matrix.*;
 import com.mojang.blaze3d.vertex.*;
 import com.voila.forge.*;
-import net.minecraft.block.*;
+import net.minecraft.*;
 import net.minecraft.client.*;
-import net.minecraft.client.entity.player.*;
 import net.minecraft.client.gui.*;
-import net.minecraft.client.gui.overlay.*;
-import net.minecraft.client.gui.recipebook.*;
-import net.minecraft.client.gui.screen.*;
-import net.minecraft.client.gui.social.*;
-import net.minecraft.client.gui.widget.*;
-import net.minecraft.client.gui.widget.button.*;
+import net.minecraft.client.gui.components.*;
+import net.minecraft.client.gui.components.events.*;
+import net.minecraft.client.gui.screens.*;
+import net.minecraft.client.gui.screens.social.*;
 import net.minecraft.client.multiplayer.*;
-import net.minecraft.client.network.play.*;
 import net.minecraft.client.particle.*;
+import net.minecraft.client.player.*;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.chunk.*;
+import net.minecraft.client.renderer.block.*;
+import net.minecraft.client.renderer.blockentity.*;
 import net.minecraft.client.renderer.culling.*;
 import net.minecraft.client.renderer.entity.*;
-import net.minecraft.client.renderer.tileentity.*;
-import net.minecraft.client.settings.*;
-import net.minecraft.client.world.*;
-import net.minecraft.entity.*;
-import net.minecraft.entity.item.*;
-import net.minecraft.entity.player.*;
-import net.minecraft.fluid.*;
-import net.minecraft.inventory.container.*;
-import net.minecraft.item.*;
-import net.minecraft.particles.*;
-import net.minecraft.potion.*;
-import net.minecraft.scoreboard.*;
-import net.minecraft.server.management.*;
-import net.minecraft.tileentity.*;
-import net.minecraft.util.*;
-import net.minecraft.util.math.*;
-import net.minecraft.util.text.*;
-import net.minecraft.world.*;
-import net.minecraft.world.biome.*;
+import net.minecraft.client.resources.sounds.*;
+import net.minecraft.client.sounds.*;
+import net.minecraft.core.*;
+import net.minecraft.core.particles.*;
+import net.minecraft.network.chat.*;
+import net.minecraft.sounds.*;
+import net.minecraft.world.effect.*;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.decoration.*;
+import net.minecraft.world.entity.player.*;
+import net.minecraft.world.inventory.*;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.*;
+import net.minecraft.world.level.biome.*;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.*;
+import net.minecraft.world.level.block.state.*;
+import net.minecraft.world.level.material.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
@@ -51,7 +44,7 @@ import javax.annotation.*;
 import java.lang.annotation.*;
 import java.util.*;
 
-@Mixin(ClientPlayNetHandler.class)
+@Mixin(ClientPacketListener.class)
 public abstract class HookClientNetHandler {
 
 }
@@ -59,13 +52,13 @@ public abstract class HookClientNetHandler {
 /**
  * /.check command
  */
-@Mixin(ClientPlayerEntity.class)
-abstract class HookClientPlayerEntity extends AbstractClientPlayerEntity {
-	private HookClientPlayerEntity(ClientWorld world, GameProfile profile){
+@Mixin(LocalPlayer.class)
+abstract class HookClientPlayerEntity extends AbstractClientPlayer {
+	private HookClientPlayerEntity(ClientLevel world, GameProfile profile){
 		super(world, profile);
 	}
 
-	@Inject(method = "sendChatMessage", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "chat", at = @At("HEAD"), cancellable = true)
 	private void chat(String message, CallbackInfo info){
 		if(message.startsWith("/.check"))
 			info.cancel();
@@ -73,17 +66,17 @@ abstract class HookClientPlayerEntity extends AbstractClientPlayerEntity {
 			return;
 		String[] args = message.split(" ");
 		if(args.length < 2){
-			Forgetest.sendMessage(TextFormatting.RED + "未输入玩家");
+			Forgetest.sendMessage(ChatFormatting.RED + "未输入玩家");
 			return;
 		}
 		String name = args[1];
-		for(Entity t : worldClient.getAllEntities()){
-			if((t instanceof PlayerEntity) && t.getName().getString().equals(name)){
-				Forgetest.runDelay(10, () -> Forgetest.checkInv(t, false));
+		for(Player t : clientLevel.players()){
+			if(t.getName().getString().equals(name)){
+				Forgetest.runDelay(5, () -> Forgetest.checkInv(t, false));
 				return;
 			}
 		}
-		Forgetest.sendMessage(TextFormatting.RED + "找不到玩家");
+		Forgetest.sendMessage(ChatFormatting.RED + "找不到玩家");
 
 	}
 }
@@ -93,26 +86,24 @@ abstract class HookClientPlayerEntity extends AbstractClientPlayerEntity {
  */
 @Mixin(GameRenderer.class)
 abstract class HookGameRenderer {
-	@Inject(method = "hurtCameraEffect", at = @At(value = "FIELD", target = "net/minecraft/entity/LivingEntity.attackedAtYaw:F"), cancellable = true)
-	private void hurt(MatrixStack matrix, float ticks, CallbackInfo ci){
+	@Inject(method = "bobHurt", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;hurtDir:F"), cancellable = true)
+	private void hurt(PoseStack matrix, float ticks, CallbackInfo ci){
 		ci.cancel();
 	}
 }
 
-/**
- * perform damage amount particle
- */
-@Mixin(LivingRenderer.class)
+/** perform damage amount particle */
+@Mixin(LivingEntityRenderer.class)
 abstract class HookLivingRenderer {
 	private Map<Integer, Float> hs = new HashMap<>();
-	private World world;
+	private Level world;
 
 	@fold
-	@Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;I)V", at = @At("HEAD"))
-	private void r(LivingEntity entity, float yaw, float ticks, MatrixStack stack, IRenderTypeBuffer buffer, int light, CallbackInfo info){
-		if(!entity.world.equals(world)){
+	@Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("HEAD"))
+	private void r(LivingEntity entity, float yaw, float ticks, PoseStack stack, MultiBufferSource buffer, int light, CallbackInfo info){
+		if(!entity.level.equals(world)){
 			hs = new HashMap<>();
-			world = entity.world;
+			world = entity.level;
 		}
 		float health = entity.getHealth();
 		if(!hs.containsKey(entity.hashCode())){
@@ -122,30 +113,34 @@ abstract class HookLivingRenderer {
 		if(health < hs.get(entity.hashCode())){
 			float damage = (hs.get(entity.hashCode()) - health);
 			for(int i = 0; i < Math.min(100, damage); i++){
-				Minecraft.getInstance().worldRenderer.addParticle(new DamageParticle.DamageParticleData((int)damage),
+				Minecraft.getInstance().levelRenderer.addParticle(new DamageParticle.DamageParticleData((int)damage),
 					true,
-					entity.getPosX(),
-					entity.getPosYHeight(0.5),
-					entity.getPosZ(), 0.1, 0, 0.1);
+					entity.getX(),
+					entity.getY(0.5),
+					entity.getZ(), 0.1, 0, 0.1);
 			}
 		}
 		hs.put(entity.hashCode(), health);
 	}
 
-	@Inject(method = "canRenderName(Lnet/minecraft/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "shouldShowName(Lnet/minecraft/world/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
 	private void t(LivingEntity entity, CallbackInfoReturnable<Boolean> info){
-		if(!(entity instanceof ArmorStandEntity))
+		LocalPlayer player=Minecraft.getInstance().player;
+		if(player==null)
+			return;
+		if(!(entity instanceof ArmorStand) && player.position().distanceTo(entity.position())<25){
 			info.setReturnValue(true);
+		}
 	}
 }
 
 /**
  * remove some particles
  */
-@Mixin(ParticleManager.class)
+@Mixin(ParticleEngine.class)
 abstract class HookParticleManager {
-	@Inject(method = "addParticle", at = @At("HEAD"), cancellable = true)
-	private void i(IParticleData particleData, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, CallbackInfoReturnable<Particle> info){
+	@Inject(method = "createParticle", at = @At("HEAD"), cancellable = true)
+	private void i(ParticleOptions particleData, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, CallbackInfoReturnable<Particle> info){
 		if(particleData.equals(ParticleTypes.DAMAGE_INDICATOR) || particleData.equals(ParticleTypes.ELDER_GUARDIAN))
 			info.setReturnValue(null);
 	}
@@ -154,16 +149,20 @@ abstract class HookParticleManager {
 /**
  * no spam
  */
-@Mixin(IngameGui.class)
+@Mixin(Gui.class)
 abstract class HookIngameGui {
-	@Inject(method = "sendChatMessage", at = @At("HEAD"), cancellable = true)
-	private void i(ChatType type, ITextComponent cmp, UUID uuid, CallbackInfo info){
+	@Inject(method = "handleChat", at = @At("HEAD"), cancellable = true)
+	private void i(ChatType type, Component cmp, UUID uuid, CallbackInfo info){
 		String str = cmp.getString();
-		if(str.equals(Forgetest.last) && !(Minecraft.getInstance().currentScreen instanceof ChatScreen)){
+		System.out.println(str);
+		if(str.equals(Forgetest.last) && !(Minecraft.getInstance().screen instanceof ChatScreen)){
 			info.cancel();
 		}
-		if(str.contains("登录") && str.contains("密码") && str.toLowerCase().contains("/l")){
-			Minecraft.getInstance().player.sendChatMessage("/login 111111");
+		if(str.contains("登录") &&
+			str.contains("密码") &&
+			str.toLowerCase().contains("/l")){
+			assert Minecraft.getInstance().player != null;
+			Minecraft.getInstance().player.chat("/login 111111");
 		}
 		Forgetest.last = str;
 	}
@@ -175,125 +174,99 @@ abstract class HookIngameGui {
 @Mixin(Minecraft.class)
 abstract class HookMinecraft implements IMinecraft {
 	@Shadow
-	public ClientPlayerEntity player;
+	public LocalPlayer player;
 
 	@Shadow
-	protected abstract void middleClickMouse();
+	protected abstract void startUseItem();
+
 
 	@Shadow
-	protected abstract void rightClickMouse();
+	protected int missTime;
+
+	@Shadow @Final @Mutable private User user;
+
+	@Shadow protected abstract boolean startAttack();
 
 	@Shadow
-	protected abstract void clickMouse();
-
-	@Shadow
-	protected int leftClickCounter;
+	protected abstract void pickBlock();
 
 	@Override
-	public void pickBlock(){
-		middleClickMouse();
+	public void pick(){
+		pickBlock();
 	}
+
 
 	@Override
 	public void use(){
-		rightClickMouse();
+		startUseItem();
 	}
 
 	@Override
 	public void attack(){
-		clickMouse();
+		startAttack();
+		pick();
 	}
 
-	@Inject(method = "displayGuiScreen", at = @At("HEAD"), cancellable = true)
+	@Override
+	public User getSession(){
+		return user;
+	}
+
+	@Override
+	public void setSession(User se){
+		user=se;
+	}
+
+	@Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
 	private void i(Screen guiScreenIn, CallbackInfo info){
 		// reset spam state
 		Forgetest.last = "";
 
 		//respawn immediately
 		if(guiScreenIn instanceof DeathScreen){
-			player.respawnPlayer();
+			player.respawn();
 			info.cancel();
 		}
 	}
 
-	@Inject(method = "clickMouse", at = @At("HEAD"))
-	private void i(CallbackInfo info){
-		leftClickCounter = 0;
+	@Inject(method = "startAttack", at = @At("HEAD"))
+	private void i(CallbackInfoReturnable<Boolean> cir){
+		missTime = 0;
 	}
 }
 
-/**
+/*
  * fix score board NPE
  */
-@Mixin(Scoreboard.class)
-abstract class HookScoreBoard {
-	@Inject(method = "removeTeam", at = @At("HEAD"), cancellable = true)
-	private void i(ScorePlayerTeam playerTeam, CallbackInfo ci){
-		if(playerTeam == null)
-			ci.cancel();
-	}
-}
-
-/**
- * fix skull texture loading stuck
- */
-@Mixin(SkullTileEntity.class)
-abstract class HookSkullTileEntity {
-	@Shadow
-	private static PlayerProfileCache profileCache;
-
-	@Shadow
-	@Nullable
-	private static MinecraftSessionService sessionService;
-
-	/**
-	 * @author v
-	 */
-	@Nullable
-	@Overwrite
-	public static GameProfile updateGameProfile(GameProfile input){
-		if(input != null && !StringUtils.isNullOrEmpty(input.getName())){
-			if(input.isComplete() && input.getProperties().containsKey("textures")){
-				return input;
-			}else if(profileCache != null && sessionService != null){
-				GameProfile gameprofile = profileCache.getGameProfileForUsername(input.getName());
-				if(gameprofile == null){
-					return input;
-				}else{
-					Property property = Iterables.getFirst(gameprofile.getProperties().get("textures"), (Property)null);
-					if(property == null){
-						return gameprofile;
-					}
-					return gameprofile;
-				}
-			}else{
-				return input;
-			}
-		}else{
-			return input;
-		}
-	}
-}
+//@Mixin(Scoreboard.class)
+//abstract class HookScoreBoard {
+//	@Inject(method = "removeTeam", at = @At("HEAD"), cancellable = true)
+//	private void i(ScorePlayerTeam playerTeam, CallbackInfo ci){
+//		if(playerTeam == null)
+//			ci.cancel();
+//	}
+//}
 
 @Mixin(SharedConstants.class)
 abstract class HookSharedConstants  // allow all characters
 {
-	@Inject(method = "isAllowedCharacter", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "isAllowedChatCharacter", at = @At("HEAD"), cancellable = true)
 	private static void i(char character, CallbackInfoReturnable<Boolean> info){
 		info.setReturnValue(true);
 	}
 }
 
-
-/**
- * disable portal sound
- */
-@Mixin(ClientWorld.class)
-abstract class HookClientWorld {
-	@Inject(method = "playSound(DDDLnet/minecraft/util/SoundEvent;Lnet/minecraft/util/SoundCategory;FFZ)V", at = @At("HEAD"), cancellable = true)
-	private void i(double x, double y, double z, SoundEvent soundIn, SoundCategory category, float volume, float pitch, boolean distanceDelay, CallbackInfo info){
-		if(soundIn.equals(SoundEvents.BLOCK_PORTAL_AMBIENT))
+@Mixin(SoundEngine.class)
+class HookSoundEngine {
+	@Inject(method = "play", at = @At("HEAD"), cancellable = true)
+	private void i(SoundInstance sound, CallbackInfo info){
+		if(sound.getLocation().equals(SoundEvents.PORTAL_AMBIENT.getLocation()))
 			info.cancel();
+		if(sound.getLocation().equals(SoundEvents.VILLAGER_HURT.getLocation())){
+			if(Minecraft.getInstance().options.getSoundSourceVolume(SoundSource.HOSTILE) == 0f){
+				info.cancel();
+			}
+		}
 	}
 }
 
@@ -303,38 +276,40 @@ abstract class HookClientWorld {
 @Mixin(Biome.class)
 abstract class HookBiome {
 	@Inject(method = "getPrecipitation", at = @At("HEAD"), cancellable = true)
-	private void i(CallbackInfoReturnable<Biome.RainType> info){
-		info.setReturnValue(Biome.RainType.NONE);
+	private void i(CallbackInfoReturnable<Biome.Precipitation> info){
+		info.setReturnValue(Biome.Precipitation.NONE);
 	}
 }
 
 /**
  * prevent taking frames
  */
-@Mixin(PlayerController.class)
+@Mixin(MultiPlayerGameMode.class)
 abstract class HookPlayerController {
 	@SuppressWarnings("all")  // if hasTag() is true, getTag() must not be null
-	@Inject(method = "windowClick", at = @At("HEAD"), cancellable = true)
-	private void i(int windowId, int slotId, int mouseButton, ClickType type, PlayerEntity player, CallbackInfoReturnable<ItemStack> info){
+	@Inject(method = "handleInventoryMouseClick", at = @At("HEAD"), cancellable = true)
+	private void i(int windowId, int slotId, int mouseButton, ClickType type, Player player, CallbackInfo info){
 		if(slotId < 0)
 			return;
-		ItemStack item = player.openContainer.getInventory().get(slotId);
+		ItemStack item = player.containerMenu.getSlot(slotId).getItem();
 		if(windowId == "spy".hashCode() && item.getItem().equals(Items.GRAY_STAINED_GLASS_PANE) && item.hasTag() && item.getTag().contains("isFrame"))
-			info.setReturnValue(ItemStack.EMPTY);
+			info.cancel();
 	}
 }
 
 /**
  * check inventory from social screen
  */
-@SuppressWarnings("all")  // social screen must be opened in a game, so world must not be null
-@Mixin(FilterListEntry.class)
-abstract class HookFilterListEntry {
-	@Inject(method = "func_244751_b", at = @At(value = "HEAD"), cancellable = true)
-	private void i(FilterManager filtermanager, UUID uuid, String name, Button button, CallbackInfo info){
+@Mixin(PlayerEntry.class)
+abstract class HookPlayerEntry {
+
+	@Dynamic
+	@Inject(method = {"lambda$new$0","m_100608_"}, at = @At(value = "HEAD"), cancellable = true)
+	private void i(PlayerSocialManager manager, UUID uuid, String name, Button button, CallbackInfo info){
 		if(Screen.hasShiftDown()){
 			info.cancel();
-			PlayerEntity player = Minecraft.getInstance().world.getPlayerByUuid(uuid);
+			assert Minecraft.getInstance().level != null;
+			Player player = Minecraft.getInstance().level.getPlayerByUUID(uuid);
 			Forgetest.checkInv(player, false);
 		}
 
@@ -343,22 +318,30 @@ abstract class HookFilterListEntry {
 }
 
 @Mixin(LivingEntity.class)
-abstract class HookLivingEntity {
+abstract class HookLivingEntity extends Entity {
+	private HookLivingEntity(EntityType<?> p_i48580_1_,Level p_i48580_2_){
+		super(p_i48580_1_, p_i48580_2_);
+	}
+
 	/**
 	 * ignore blindness effect
 	 */
-	@Inject(method = "isPotionActive", at = @At("HEAD"), cancellable = true)
-	private void i(Effect effect, CallbackInfoReturnable<Boolean> info){
-		if(effect == Effects.BLINDNESS)
+	@Inject(method = "hasEffect", at = @At("HEAD"), cancellable = true)
+	private void i(MobEffect effect, CallbackInfoReturnable<Boolean> info){
+		if(effect == MobEffects.BLINDNESS)
 			info.setReturnValue(false);
 	}
 
 	/**
-	 * always render name tag to display health value
+	 * always render name tag to display health value (CustomNameVisible)
 	 */
-	@Inject(method = "getAlwaysRenderNameTagForRender", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "shouldShowName", at = @At("HEAD"), cancellable = true)
 	private void t(CallbackInfoReturnable<Boolean> info){
-		info.setReturnValue(true);
+		LocalPlayer player=Minecraft.getInstance().player;
+		if(player == null)
+			return;
+		if(!((Object)this instanceof ArmorStand) && position().distanceTo(player.position()) < 25)
+			info.setReturnValue(true);
 	}
 
 }
@@ -368,22 +351,20 @@ abstract class HookLivingEntity {
  */
 @Mixin(EntityRenderer.class)
 abstract class HookEntityRenderer {
-	@Inject(method = "renderName", at = @At("HEAD"))
-	private void i(Entity entityIn, ITextComponent nameIn, MatrixStack matrixStack, IRenderTypeBuffer buffer, int packedLight, CallbackInfo ci){
-		if(!(entityIn instanceof LivingEntity) || !(nameIn instanceof IFormattableTextComponent) || (entityIn instanceof ArmorStandEntity))
+	@Inject(method = "renderNameTag", at = @At("HEAD"))
+	private void i(Entity entityIn, Component nameIn, PoseStack matrixStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci){
+		if(!(entityIn instanceof LivingEntity living) || !(nameIn instanceof MutableComponent name) || (entityIn instanceof ArmorStand))
 			return;
-		LivingEntity living = (LivingEntity)entityIn;
-		IFormattableTextComponent name = (IFormattableTextComponent)nameIn;
 		float health = living.getHealth();
 		int maxHealth = (int)living.getMaxHealth();
 		String healthText;
 		if(health / maxHealth >= 0.66)
-			healthText = " " + TextFormatting.GREEN + String.format("%.2f", health) + " / " + maxHealth;
+			healthText = " " + ChatFormatting.GREEN + String.format("%.2f", health) + " / " + maxHealth;
 		else if(health / maxHealth >= 0.33)
-			healthText = " " + TextFormatting.GOLD + String.format("%.2f", health) + " / " + maxHealth;
+			healthText = " " + ChatFormatting.GOLD + String.format("%.2f", health) + " / " + maxHealth;
 		else
-			healthText = " " + TextFormatting.RED + String.format("%.2f", health) + " / " + maxHealth;
-		name.appendSibling(new StringTextComponent(healthText));
+			healthText = " " + ChatFormatting.RED + String.format("%.2f", health) + " / " + maxHealth;
+		name.append(new TextComponent(healthText));
 		nameIn = name;
 	}
 }
@@ -391,25 +372,25 @@ abstract class HookEntityRenderer {
 /**
  * Xray block
  */
-@Mixin(AbstractBlock.AbstractBlockState.class)
+@Mixin(BlockBehaviour.BlockStateBase.class)
 abstract class HookBlockState {
 	@Shadow
 	public abstract Block getBlock();
 
-	@Inject(method = "getRenderType", at = @At("HEAD"), cancellable = true)
-	private void i(CallbackInfoReturnable<BlockRenderType> info){
+	@Inject(method = "getRenderShape", at = @At("HEAD"), cancellable = true)
+	private void i(CallbackInfoReturnable<RenderShape> info){
 		if(Keys.xray && !Keys.enabledBlocks.contains(getBlock()))
-			info.setReturnValue(BlockRenderType.INVISIBLE);
+			info.setReturnValue(RenderShape.INVISIBLE);
 	}
 
-	@Inject(method = "getLightValue", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "getLightEmission", at = @At("HEAD"), cancellable = true)
 	private void light(CallbackInfoReturnable<Integer> info){
 		if(Keys.xray)
 			info.setReturnValue(15);
 	}
 
-	@Inject(method = "isOpaqueCube", at = @At("HEAD"), cancellable = true)
-	private void opaque(IBlockReader reader, BlockPos pos, CallbackInfoReturnable<Boolean> info){
+	@Inject(method = "isSolidRender", at = @At("HEAD"), cancellable = true)
+	private void opaque(BlockGetter reader, BlockPos pos, CallbackInfoReturnable<Boolean> info){
 		if(Keys.xray)
 			info.setReturnValue(true);
 	}
@@ -418,27 +399,25 @@ abstract class HookBlockState {
 /**
  * Xray Tile Entity
  */
-@Mixin(TileEntityRendererDispatcher.class)
+@Mixin(BlockEntityRenderDispatcher.class)
 abstract class HookTileEntityRenderer {
 	@Shadow
 	@Nullable
-	public abstract <E extends TileEntity> TileEntityRenderer<E> getRenderer(E tileEntityIn);
+	public abstract <E extends BlockEntity> BlockEntityRenderer<E> getRenderer(E tileEntityIn);
 
 	@Shadow
-	private static void runCrashReportable(TileEntity tileEntityIn, Runnable runnableIn){
+	private static void tryRender(BlockEntity tileEntityIn, Runnable runnableIn){
 	}
+
+
+	@Shadow public abstract <E extends BlockEntity> void render(E p_112268_, float p_112269_, PoseStack p_112270_, MultiBufferSource p_112271_);
 
 	@Shadow
-	private static <T extends TileEntity> void render(TileEntityRenderer<T> rendererIn, T tileEntityIn, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn){
+	private static <T extends BlockEntity> void setupAndRender(BlockEntityRenderer<T> p_112285_, T p_112286_, float p_112287_, PoseStack p_112288_, MultiBufferSource p_112289_){
 	}
 
-	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
-	private static void i(TileEntityRenderer<TileEntity> renderer,
-						  TileEntity tileEntity,
-						  float partialTicks,
-						  MatrixStack matrixStack,
-						  IRenderTypeBuffer buffer,
-						  CallbackInfo info){
+	@Inject(method = "setupAndRender", at = @At("HEAD"), cancellable = true)
+	private static <T extends BlockEntity> void i(BlockEntityRenderer<T> tileRenderer, T tileEntity, float p_112287_, PoseStack p_112288_, MultiBufferSource p_112289_, CallbackInfo info){
 		if(Keys.xray && !Keys.enabledBlocks.contains(tileEntity.getBlockState().getBlock())){
 			info.cancel();
 		}
@@ -447,15 +426,15 @@ abstract class HookTileEntityRenderer {
 	/**
 	 * ignore render distance when xray enabled
 	 */
-	@Inject(method = "renderTileEntity", at = @At("HEAD"), cancellable = true)
-	private <E extends TileEntity> void t(E tileEntityIn, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, CallbackInfo info){
+	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
+	private <E extends BlockEntity> void t(E tileEntityIn, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, CallbackInfo info){
 		if(Keys.xray){
 			info.cancel();
-			TileEntityRenderer<E> tileentityrenderer = this.getRenderer(tileEntityIn);
+			BlockEntityRenderer<E> tileentityrenderer = this.getRenderer(tileEntityIn);
 			if(tileentityrenderer != null){
-				if(tileEntityIn.hasWorld() && tileEntityIn.getType().isValidBlock(tileEntityIn.getBlockState().getBlock())){
-					runCrashReportable(tileEntityIn, () ->
-						render(tileentityrenderer, tileEntityIn, partialTicks, matrixStackIn, bufferIn));
+				if(tileEntityIn.hasLevel() && tileEntityIn.getType().isValid(tileEntityIn.getBlockState())){
+					tryRender(tileEntityIn, () ->
+						setupAndRender(tileentityrenderer, tileEntityIn, partialTicks, matrixStackIn, bufferIn));
 				}
 			}
 
@@ -466,10 +445,10 @@ abstract class HookTileEntityRenderer {
 /**
  * Xray Fluid
  */
-@Mixin(FluidBlockRenderer.class)
+@Mixin(LiquidBlockRenderer.class)
 abstract class HookFluidBlockRenderer {
-	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
-	private void i(IBlockDisplayReader reader, BlockPos pos, IVertexBuilder builder, FluidState state, CallbackInfoReturnable<Boolean> info){
+	@Inject(method = "tesselate", at = @At("HEAD"), cancellable = true)
+	private void i(BlockAndTintGetter reader, BlockPos pos, VertexConsumer p_203176_, BlockState p_203177_, FluidState p_203178_, CallbackInfoReturnable<Boolean> info){
 		//if block is not included, hide it.
 		if(Keys.xray && !Keys.enabledBlocks.contains(reader.getBlockState(pos).getBlock())){
 			info.setReturnValue(false);
@@ -479,8 +458,8 @@ abstract class HookFluidBlockRenderer {
 	/**
 	 * render sides
 	 */
-	@Inject(method = "func_239284_a_", at = @At("HEAD"), cancellable = true)
-	private static void d(IBlockReader reader,
+	@Inject(method = "isFaceOccludedByState", at = @At("HEAD"), cancellable = true)
+	private static void d(BlockGetter reader,
 						  Direction direction,
 						  float p_239284_2_,
 						  BlockPos blockPos,
@@ -494,11 +473,11 @@ abstract class HookFluidBlockRenderer {
 /**
  * compatible with OptiFine
  */
-@Mixin(ChunkRenderDispatcher.ChunkRender.RebuildTask.class)
+@Mixin(targets = "net.minecraft.client.renderer.chunk.ChunkRenderDispatcher$RenderChunk$RebuildTask")
 abstract class HookChunkRender {
 	//render model arg
 	@fold
-	@ModifyArg(method = "compile", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/BlockRendererDispatcher;renderModel(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/IBlockDisplayReader;Lcom/mojang/blaze3d/matrix/MatrixStack;Lcom/mojang/blaze3d/vertex/IVertexBuilder;ZLjava/util/Random;Lnet/minecraftforge/client/model/data/IModelData;)Z"), index = 5)
+	@ModifyArg(method = "compile", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/BlockRenderDispatcher;renderBatched(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/BlockAndTintGetter;Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;ZLjava/util/Random;Lnet/minecraftforge/client/model/data/IModelData;)Z"), index = 5)
 	public boolean renderModel(boolean checkSides){
 		if(Keys.xray)
 			return false;
@@ -506,12 +485,12 @@ abstract class HookChunkRender {
 	}
 }
 
-@Mixin(WorldRenderer.class)
+@Mixin(LevelRenderer.class)
 abstract class HookWorldRenderer {
 	//setupTerrain arg
 	@fold
-	@ModifyArg(method = "updateCameraAndRender", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/WorldRenderer;setupTerrain(Lnet/minecraft/client/renderer/ActiveRenderInfo;Lnet/minecraft/client/renderer/culling/ClippingHelper;ZIZ)V"), index = 4)
-	private boolean d(ActiveRenderInfo activeRenderInfoIn, ClippingHelper camera, boolean debugCamera, int frameCount, boolean playerSpectator){
+	@ModifyArg(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;setupRender(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;ZZ)V"), index = 3)
+	private boolean d(Camera p_194339_, Frustum p_194340_, boolean p_194341_, boolean playerSpectator){
 		if(Keys.xray)
 			return true;
 		return playerSpectator;
@@ -521,26 +500,26 @@ abstract class HookWorldRenderer {
 /**
  * speed doesn't effect fov
  */
-@Mixin(AbstractClientPlayerEntity.class)
-abstract class HookAbsClientPlayer extends PlayerEntity {
-	private HookAbsClientPlayer(World p_i241920_1_, BlockPos p_i241920_2_, float p_i241920_3_, GameProfile p_i241920_4_){
+@Mixin(AbstractClientPlayer.class)
+abstract class HookAbsClientPlayer extends Player {
+	private HookAbsClientPlayer(Level p_i241920_1_, BlockPos p_i241920_2_, float p_i241920_3_, GameProfile p_i241920_4_){
 		super(p_i241920_1_, p_i241920_2_, p_i241920_3_, p_i241920_4_);
 	}
 
-	@Inject(method = "getFovModifier", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "getFieldOfViewModifier", at = @At("HEAD"), cancellable = true)
 	private void i(CallbackInfoReturnable<Float> info){
 		float f = 1.0F;
-		if(this.abilities.isFlying){
+		if(this.getAbilities().flying){
 			f *= 1.1F;
 		}
 
 		f = (float)((double)f * (((isSprinting() ? 0.13 : 0.1) / 0.1 + 1.0D) / 2.0D));
-		if(this.abilities.getWalkSpeed() == 0.0F || Float.isNaN(f) || Float.isInfinite(f)){
+		if(this.getAbilities().getWalkingSpeed() == 0.0F || Float.isNaN(f) || Float.isInfinite(f)){
 			f = 1.0F;
 		}
 
-		if(this.isHandActive() && this.getActiveItemStack().getItem() == Items.BOW){
-			int i = this.getItemInUseMaxCount();
+		if(this.isUsingItem() && this.getUseItem().getItem() == Items.BOW){
+			int i = this.getTicksUsingItem();
 			float f1 = (float)i / 20.0F;
 			if(f1 > 1.0F){
 				f1 = 1.0F;
@@ -549,8 +528,10 @@ abstract class HookAbsClientPlayer extends PlayerEntity {
 			}
 
 			f *= 1.0F - f1 * 0.15F;
+		}else if (Minecraft.getInstance().options.getCameraType().isFirstPerson() && this.isScoping()) {
+			info.setReturnValue(0.1f);
 		}
-		float fov = net.minecraftforge.client.ForgeHooksClient.getOffsetFOV(this, f);
+		float fov = net.minecraftforge.client.ForgeHooksClient.getFieldOfView(this, f);
 		info.setReturnValue(fov);
 	}
 }
@@ -558,20 +539,19 @@ abstract class HookAbsClientPlayer extends PlayerEntity {
 /**
  * add switch account button
  */
-@Mixin(MainMenuScreen.class)
+@Mixin(TitleScreen.class)
 abstract class HookMainMenu extends Screen {
 
-	private HookMainMenu(ITextComponent title){
+	private HookMainMenu(Component title){
 		super(title);
 	}
 
 	@Inject(method = "init", at = @At("TAIL"))
 	private void i(CallbackInfo info){
 		Button optionButton = null;
-		for(IGuiEventListener t : children){
-			if(t instanceof Button){
-				Button b = (Button)t;
-				if(new TranslationTextComponent("menu.options").equals(b.getMessage())){
+		for(GuiEventListener t : children()){
+			if(t instanceof Button b){
+				if(new TranslatableComponent("menu.options").equals(b.getMessage())){
 					optionButton = b;
 					break;
 				}
@@ -582,55 +562,55 @@ abstract class HookMainMenu extends Screen {
 			return;
 		}
 		Button switchButton = new Button(optionButton.x, optionButton.y + 24, optionButton.getWidth(), optionButton.getHeight(),
-			new TranslationTextComponent("menu." + Forgetest.ID + ".switchAccount"),
-			button -> Minecraft.getInstance().displayGuiScreen(new SwitchAccountScreen(this)));
+			new TranslatableComponent("menu." + Forgetest.ID + ".switchAccount"),
+			button -> Minecraft.getInstance().setScreen(new SwitchAccountScreen(this)));
 
-		addButton(switchButton);
+		addRenderableWidget(switchButton);
 
 	}
 }
 
-/**
+/*
  * fix recipe book NPE crash (baritone)
  */
-@Mixin(RecipeBookGui.class)
-abstract class HookRecipeBookGui {
-	@Shadow
-	private TextFieldWidget searchBar;
+//@Mixin(RecipeBookGui.class)
+//abstract class HookRecipeBookGui {
+//	@Shadow
+//	private TextFieldWidget searchBar;
+//
+//	@Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/TextFieldWidget;tick()V"), cancellable = true)
+//	private void i(CallbackInfo info){
+//		if(searchBar == null)
+//			info.cancel();
+//	}
+//}
 
-	@Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/TextFieldWidget;tick()V"), cancellable = true)
-	private void i(CallbackInfo info){
-		if(searchBar == null)
-			info.cancel();
-	}
-}
-
-//@SuppressWarnings("all")
-@Mixin(KeyBinding.class)
+@SuppressWarnings("all")
+@Mixin(KeyMapping.class)
 abstract class HookKeyBinding {
-	@Inject(method = "isKeyDown", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "isDown", at = @At("HEAD"), cancellable = true)
 	private void i(CallbackInfoReturnable<Boolean> info){
 		if(!Script.enabled){
 			return;
 		}
 		Object key = this;
-		GameSettings settings = Minecraft.getInstance().gameSettings;
-		if(Keys.runningScript.forward && key == settings.keyBindForward ||
-			Keys.runningScript.backward && key == settings.keyBindBack ||
-			Keys.runningScript.left && key == settings.keyBindLeft ||
-			Keys.runningScript.right && key == settings.keyBindRight ||
-			Keys.runningScript.jump && key == settings.keyBindJump ||
-			Keys.runningScript.crouch && key == settings.keyBindSneak ||
-			Keys.runningScript.use && key == settings.keyBindUseItem ||
-			Keys.runningScript.attack && key == settings.keyBindAttack){
+		Options settings = Minecraft.getInstance().options;
+		if(Keys.runningScript.forward && key == settings.keyUp ||
+			Keys.runningScript.backward && key == settings.keyDown ||
+			Keys.runningScript.left && key == settings.keyLeft ||
+			Keys.runningScript.right && key == settings.keyRight ||
+			Keys.runningScript.jump && key == settings.keyJump ||
+			Keys.runningScript.crouch && key == settings.keyShift ||
+			Keys.runningScript.use && key == settings.keyUse ||
+			Keys.runningScript.attack && key == settings.keyAttack){
 			info.setReturnValue(true);
 		}
 	}
 }
 
-@Mixin(DebugOverlayGui.class)
-abstract class HookDebugGui extends AbstractGui {
-	@Inject(method = "getDebugInfoLeft", at = @At("RETURN"), cancellable = true)
+@Mixin(DebugScreenOverlay.class)
+abstract class HookDebugGui extends GuiComponent {
+	@Inject(method = "getGameInformation", at = @At("RETURN"), cancellable = true)
 	private void i(CallbackInfoReturnable<List<String>> info){
 		if(Script.enabled){
 			List<String> list = info.getReturnValue();
@@ -641,9 +621,7 @@ abstract class HookDebugGui extends AbstractGui {
 	}
 }
 
-/**
- * make no sense, just make IDE can fold annotations to hide long sentence
- */
+/** make no sense, just make IDE can fold annotations to hide long sentence */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
 @interface fold {

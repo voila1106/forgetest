@@ -1,28 +1,30 @@
 package com.voila.forge;
 
-import net.minecraft.block.*;
+import net.minecraft.*;
 import net.minecraft.client.*;
-import net.minecraft.client.entity.player.*;
-import net.minecraft.client.settings.*;
-import net.minecraft.entity.player.*;
-import net.minecraft.util.text.*;
+import net.minecraft.client.gui.screens.social.*;
+import net.minecraft.client.player.*;
+import net.minecraft.locale.*;
+import net.minecraft.world.entity.player.*;
+import net.minecraft.world.level.block.*;
+import net.minecraftforge.client.*;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.eventbus.api.*;
-import net.minecraftforge.fml.client.registry.*;
 import org.lwjgl.glfw.*;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
 
 public class Keys {
-	public static KeyBinding upKey;
-	public static KeyBinding downKey;
-	public static KeyBinding toggleKey;
-	public static KeyBinding lightKey;
-	public static KeyBinding xrayKey;
-	public static KeyBinding configXrayKey;
-	public static KeyBinding scriptKey;
-	public static KeyBinding configScriptKey;
+	public static KeyMapping upKey;
+	public static KeyMapping downKey;
+	public static KeyMapping toggleKey;
+	public static KeyMapping lightKey;
+	public static KeyMapping xrayKey;
+	public static KeyMapping configXrayKey;
+	public static KeyMapping scriptKey;
+	public static KeyMapping configScriptKey;
 
 
 	public static boolean xray = false;
@@ -44,8 +46,8 @@ public class Keys {
 		new File("config/" + Forgetest.ID).mkdirs();
 	}
 
-	private static KeyBinding register(String name, int code, String category){
-		KeyBinding key = new KeyBinding(name, code, category);
+	private static KeyMapping register(String name, int code, String category){
+		KeyMapping key = new KeyMapping(name, code, category);
 		ClientRegistry.registerKeyBinding(key);
 		return key;
 	}
@@ -53,43 +55,45 @@ public class Keys {
 	@SubscribeEvent
 	public static void onKeyDown(InputEvent.KeyInputEvent event){
 //		LOGGER.info(event.getKey()+" "+event.getAction());
-		ClientPlayerEntity player = Minecraft.getInstance().player;
+		LocalPlayer player = Minecraft.getInstance().player;
 		if(player == null)
 			return;
-		PlayerAbilities ability = player.abilities;
-		if(upKey.isPressed()){
-			ability.setFlySpeed(ability.getFlySpeed() + 0.005F);
-		}else if(downKey.isPressed()){
-			ability.setFlySpeed(ability.getFlySpeed() - 0.005F);
-		}else if(toggleKey.isPressed()){
-			ability.setFlySpeed(0.05F);
-			ability.allowFlying = !ability.allowFlying;
+		Abilities ability = player.getAbilities();
+		if(upKey.consumeClick()){
+			ability.setFlyingSpeed(ability.getFlyingSpeed() + 0.005F);
+		}else if(downKey.consumeClick()){
+			ability.setFlyingSpeed(ability.getFlyingSpeed() - 0.005F);
+		}else if(toggleKey.consumeClick()){
+			ability.setFlyingSpeed(0.05F);
+			ability.mayfly = !ability.mayfly;
 		}
-		if(lightKey.isPressed()){
-			Minecraft.getInstance().gameSettings.gamma = Minecraft.getInstance().gameSettings.gamma > 0.5 ? 0.5 : 30;
+		if(lightKey.consumeClick()){
+			Minecraft.getInstance().options.gamma = Minecraft.getInstance().options.gamma > 0.5 ? 0.5 : 30;
 		}
-		if(xrayKey.isPressed()){
+		if(xrayKey.consumeClick()){
 			toggleXray();
 		}
-		if(configXrayKey.isPressed()){
+		if(configXrayKey.consumeClick()){
 			Minecraft mc = Minecraft.getInstance();
-			if(mc.currentScreen == null){
-				mc.displayGuiScreen(new ConfigXrayScreen());
+			if(mc.screen == null){
+				mc.setScreen(new ConfigXrayScreen());
 			}
 		}
-		if(scriptKey.isPressed()){
+		if(scriptKey.consumeClick()){
 			toggleScript();
 		}
-		if(configScriptKey.isPressed()){
-			Minecraft.getInstance().displayGuiScreen(new SelectScriptScreen());
+		if(configScriptKey.consumeClick()){
+			Minecraft.getInstance().setScreen(new SelectScriptScreen());
 		}
+
+
 	}
 
 	private static void toggleXray(){
 		if(!xray){          //will enable
 			enabledBlocks = ConfigXrayScreen.readConfig();
 		}
-		Minecraft.getInstance().worldRenderer.loadRenderers();
+		Minecraft.getInstance().levelRenderer.allChanged();
 		xray = !xray;
 
 	}
@@ -113,7 +117,7 @@ public class Keys {
 			runningScript = new Script(cmd.toArray(new String[0])).run();
 		}catch(Exception e){
 			e.printStackTrace();
-			Forgetest.sendMessage(TextFormatting.RED + e.getMessage());
+			Forgetest.sendMessage(ChatFormatting.RED + e.getMessage());
 		}
 
 

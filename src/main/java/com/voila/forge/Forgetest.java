@@ -1,16 +1,18 @@
 package com.voila.forge;
 
-import net.minecraft.block.*;
+import net.minecraft.Util;
+import net.minecraft.*;
 import net.minecraft.client.*;
-import net.minecraft.client.entity.player.*;
-import net.minecraft.client.gui.*;
-import net.minecraft.entity.*;
-import net.minecraft.entity.player.*;
-import net.minecraft.inventory.container.*;
-import net.minecraft.item.*;
+import net.minecraft.client.gui.screens.*;
+import net.minecraft.client.player.*;
+import net.minecraft.core.*;
 import net.minecraft.nbt.*;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.*;
+import net.minecraft.network.chat.*;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.player.*;
+import net.minecraft.world.inventory.*;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.block.*;
 import net.minecraftforge.api.distmarker.*;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.common.*;
@@ -20,7 +22,6 @@ import net.minecraftforge.eventbus.api.*;
 import net.minecraftforge.fml.*;
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.event.lifecycle.*;
-import net.minecraftforge.fml.event.server.*;
 import net.minecraftforge.fml.javafmlmod.*;
 import org.apache.logging.log4j.*;
 
@@ -66,8 +67,6 @@ public class Forgetest {
 	}
 
 	private void doClientStuff(final FMLClientSetupEvent event){
-		// do something that can only be done on the client
-		LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
 		Keys.init();
 	}
 
@@ -87,15 +86,7 @@ public class Forgetest {
 			collect(Collectors.toList()));
 	}
 
-	// You can use SubscribeEvent and let the Event Bus discover methods to call
-	@SubscribeEvent
-	public void onServerStarting(FMLServerStartingEvent event){
-		// do something when the server starts
-		LOGGER.info("HELLO from server starting");
-	}
 
-	// You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD
-	// Event bus for receiving Registry Events)
 	@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 	public static class RegistryEvents {
 		@SubscribeEvent
@@ -109,7 +100,7 @@ public class Forgetest {
 	public static class RegisterParticle {
 		@SubscribeEvent
 		public static void onParticleRegistry(ParticleFactoryRegisterEvent event){
-			Minecraft.getInstance().particles.registerFactory(TestItem.damage.get(), DamageParticle.Factory::new);
+			Minecraft.getInstance().particleEngine.register(TestItem.damage.get(), DamageParticle.Factory::new);
 		}
 	}
 
@@ -118,62 +109,63 @@ public class Forgetest {
 	 */
 	@SubscribeEvent
 	public void onOverlay(RenderBlockOverlayEvent event){
-		if(event.getOverlayType() != RenderBlockOverlayEvent.OverlayType.BLOCK)
+		//if(event.getOverlayType() != RenderBlockOverlayEvent.OverlayType.BLOCK)
 			event.setCanceled(true);
 	}
 
 	@SubscribeEvent
 	public void onInteractEntity(PlayerInteractEvent.EntityInteract event){
-		if(event.getTarget() instanceof PlayerEntity)
+		if(event.getTarget() instanceof Player)
 			checkInv(event.getTarget(), true);
 	}
 
 	public static void checkInv(Entity target, boolean fromEvent){
-		ClientPlayerEntity me = Minecraft.getInstance().player;
-		if(me == null || !(target instanceof PlayerEntity)){
-			sendMessage(TextFormatting.RED + "玩家无效");
+		LocalPlayer me = Minecraft.getInstance().player;
+		if(me == null || !(target instanceof Player player)){
+			sendMessage(ChatFormatting.RED + "玩家无效");
 			return;
 		}
-		if(fromEvent && !me.isSneaking()){
+		if(fromEvent && !me.isCrouching()){
 			return;
 		}
-		PlayerEntity player = (PlayerEntity)target;
-		PlayerInventory inv = player.inventory;
-		ScreenManager.openScreen(ContainerType.GENERIC_9X5, Minecraft.getInstance(), "spy".hashCode(), player.getName());
-		Container container = me.openContainer;
-		ItemStack frame = Items.GRAY_STAINED_GLASS_PANE.getDefaultInstance().setDisplayName(StringTextComponent.EMPTY);
-		frame.setTagInfo("isFrame", ByteNBT.valueOf(true));
-		for(Slot t : container.inventorySlots){
-			container.putStackInSlot(t.getSlotIndex(), frame.copy());
+		Inventory inv = player.getInventory();
+		MenuScreens.create(MenuType.GENERIC_9x5, Minecraft.getInstance(), "spy".hashCode(), player.getName());
+		AbstractContainerMenu container = me.containerMenu;
+		ItemStack frame = Items.GRAY_STAINED_GLASS_PANE.getDefaultInstance().setHoverName(TextComponent.EMPTY);
+		frame.getOrCreateTag().put("isFrame", ByteTag.valueOf(true));
+		NonNullList<Slot> slots = container.slots;
+		for(int i = 0; i < 45; i++){
+			Slot t = slots.get(i);
+			t.set(frame.copy());
 		}
-		container.putStackInSlot(1, frame.copy().setDisplayName(name("头盔")));
-		container.putStackInSlot(3, frame.copy().setDisplayName(name("胸甲")));
-		container.putStackInSlot(5, frame.copy().setDisplayName(name("护腿")));
-		container.putStackInSlot(7, frame.copy().setDisplayName(name("靴子")));
-		container.putStackInSlot(21, frame.copy().setDisplayName(name("副手")));
-		container.putStackInSlot(23, frame.copy().setDisplayName(name("主手")));
-		container.putStackInSlot(29, frame.copy().setDisplayName(name("副手")));
-		container.putStackInSlot(33, frame.copy().setDisplayName(name("主手")));
-		container.putStackInSlot(39, frame.copy().setDisplayName(name("副手")));
-		container.putStackInSlot(41, frame.copy().setDisplayName(name("主手")));
+		container.getSlot(1).set(frame.copy().setHoverName(name("头盔")));
+		container.getSlot(3).set(frame.copy().setHoverName(name("胸甲")));
+		container.getSlot(5).set(frame.copy().setHoverName(name("护腿")));
+		container.getSlot(7).set(frame.copy().setHoverName(name("靴子")));
+		container.getSlot(21).set(frame.copy().setHoverName(name("副手")));
+		container.getSlot(23).set(frame.copy().setHoverName(name("主手")));
+		container.getSlot(29).set(frame.copy().setHoverName(name("副手")));
+		container.getSlot(33).set(frame.copy().setHoverName(name("主手")));
+		container.getSlot(39).set(frame.copy().setHoverName(name("副手")));
+		container.getSlot(41).set(frame.copy().setHoverName(name("主手")));
 
 
-		List<ItemStack> armor = inv.armorInventory;
-		container.putStackInSlot(10, armor.get(3).copy());
-		container.putStackInSlot(12, armor.get(2).copy());
-		container.putStackInSlot(14, armor.get(1).copy());
-		container.putStackInSlot(16, armor.get(0).copy());
+		List<ItemStack> armor = inv.armor;
+		container.getSlot(10).set(armor.get(3).copy());
+		container.getSlot(12).set(armor.get(2).copy());
+		container.getSlot(14).set(armor.get(1).copy());
+		container.getSlot(16).set(armor.get(0).copy());
 
-		List<ItemStack> main = inv.mainInventory;
-		container.putStackInSlot(32, main.get(0).copy());
+		List<ItemStack> main = inv.items;
+		container.getSlot(32).set(main.get(0).copy());
 
-		List<ItemStack> off = inv.offHandInventory;
-		container.putStackInSlot(30, off.get(0).copy());
+		List<ItemStack> off = inv.offhand;
+		container.getSlot(30).set(off.get(0).copy());
 
 	}
 
-	private static ITextComponent name(String str){
-		return ITextComponent.Serializer.getComponentFromJson("{\n" +
+	private static Component name(String str){
+		return Component.Serializer.fromJson("{\n" +
 			"    \"text\":\"" + str + "\",\n" +
 			"    \"italic\":false,\n" +
 			"    \"color\":\"aqua\"\n" +
@@ -181,7 +173,11 @@ public class Forgetest {
 	}
 
 	public static void sendMessage(String msg){
-		Minecraft.getInstance().ingameGUI.sendChatMessage(ChatType.SYSTEM, new StringTextComponent(msg), Util.DUMMY_UUID);
+		Minecraft.getInstance().gui.handleChat(ChatType.SYSTEM, new TextComponent(msg), Util.NIL_UUID);
+	}
+
+	public static void sendMessage(Component msg){
+		Minecraft.getInstance().gui.handleChat(ChatType.SYSTEM, msg, Util.NIL_UUID);
 	}
 
 	@OnlyIn(Dist.CLIENT)

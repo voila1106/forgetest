@@ -3,38 +3,35 @@
     "minVersion": "0.8",
     "package": "com.voila.forge.mixin",
     "compatibilityLevel": "JAVA_8",
-    "refmap": "forge.refmap.json",
+    "refmap": "forgetest.refmap.json",
     "mixins": [
-        "HookBiome",
-        "HookBlockState",
-        "HookClientNetHandler",
-        "HookGameRenderer",
-        "HookLivingEntity",
-        "HookScoreBoard",
-        "HookSharedConstants",
-        "HookSkullTileEntity"
+        "HookSharedConstants"
     ],
     "client": [
         "HookAbsClientPlayer",
+        "HookBiome",
+        "HookBlockState",
         "HookChunkRender",
+        "HookClientNetHandler",
         "HookClientPlayerEntity",
-        "HookClientWorld",
         "HookDebugGui",
         "HookEntityRenderer",
-        "HookFilterListEntry",
         "HookFluidBlockRenderer",
+        "HookGameRenderer",
         "HookIngameGui",
         "HookKeyBinding",
+        "HookLivingEntity",
         "HookLivingRenderer",
         "HookMainMenu",
         "HookMinecraft",
         "HookParticleManager",
         "HookPlayerController",
-        "HookRecipeBookGui",
+        "HookPlayerEntry",
+        "HookSoundEngine",
         "HookTileEntityRenderer",
         "HookWorldRenderer"
     ],
     "injectors": {
         "defaultRequire": 1
-  }
+    }
 }
