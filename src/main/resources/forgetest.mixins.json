@@ -24,6 +24,7 @@
         "HookLivingRenderer",
         "HookMainMenu",
         "HookMinecraft",
+        "HookPacketUtils",
         "HookParticleManager",
         "HookPlayerController",
         "HookPlayerEntry",

@@ -22,8 +22,11 @@ import net.minecraft.client.resources.sounds.*;
 import net.minecraft.client.sounds.*;
 import net.minecraft.core.*;
 import net.minecraft.core.particles.*;
+import net.minecraft.network.*;
 import net.minecraft.network.chat.*;
+import net.minecraft.network.protocol.*;
 import net.minecraft.sounds.*;
+import net.minecraft.util.thread.*;
 import net.minecraft.world.effect.*;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.decoration.*;
@@ -92,7 +95,9 @@ abstract class HookGameRenderer {
 	}
 }
 
-/** perform damage amount particle */
+/**
+ * perform damage amount particle
+ */
 @Mixin(LivingEntityRenderer.class)
 abstract class HookLivingRenderer {
 	private Map<Integer, Float> hs = new HashMap<>();
@@ -125,10 +130,10 @@ abstract class HookLivingRenderer {
 
 	@Inject(method = "shouldShowName(Lnet/minecraft/world/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
 	private void t(LivingEntity entity, CallbackInfoReturnable<Boolean> info){
-		LocalPlayer player=Minecraft.getInstance().player;
-		if(player==null)
+		LocalPlayer player = Minecraft.getInstance().player;
+		if(player == null)
 			return;
-		if(!(entity instanceof ArmorStand) && player.position().distanceTo(entity.position())<25){
+		if(!(entity instanceof ArmorStand) && player.position().distanceTo(entity.position()) < 25){
 			info.setReturnValue(true);
 		}
 	}
@@ -151,6 +156,10 @@ abstract class HookParticleManager {
  */
 @Mixin(Gui.class)
 abstract class HookIngameGui {
+	@Shadow protected int screenWidth;
+
+	@Shadow protected int screenHeight;
+
 	@Inject(method = "handleChat", at = @At("HEAD"), cancellable = true)
 	private void i(ChatType type, Component cmp, UUID uuid, CallbackInfo info){
 		String str = cmp.getString();
@@ -165,6 +174,58 @@ abstract class HookIngameGui {
 			Minecraft.getInstance().player.chat("/login 111111");
 		}
 		Forgetest.last = str;
+	}
+
+	@Inject(method = "renderHotbar", at = @At("HEAD"))
+	private void h(float partialTicks, PoseStack stack, CallbackInfo info){
+		Minecraft mc = Minecraft.getInstance();
+		assert mc.player != null;
+		if(mc.player.isSpectator())
+			return;
+		int left=screenWidth/2-91;
+		int top=screenHeight-19;
+		Inventory inv = mc.player.getInventory();
+		ItemStack main = inv.items.get(inv.selected);
+		ItemStack off = inv.offhand.get(0);
+		if(main.getItem() != Items.AIR){
+			int amount=main.getCount();
+			boolean flag=false;
+			NonNullList<ItemStack> items = inv.items;
+			for(int i = 0; i < items.size(); i++){
+				if(i==inv.selected)
+					continue;
+				ItemStack t = items.get(i);
+				if(ItemStack.isSameItemSameTags(main,t)){
+					amount += t.getCount();
+					flag=true;
+				}
+			}
+			if(ItemStack.isSameItemSameTags(main,off)){
+				amount+=off.getCount();
+				flag=true;
+			}
+			if(flag){
+				mc.getItemRenderer().renderAndDecorateItem(main,left+182+20,top);
+				mc.getItemRenderer().renderGuiItemDecorations(mc.font,main,left+182+20,top,amount+"");
+			}
+
+		}
+		if(off.getItem() != Items.AIR){
+			int amount=off.getCount();
+			boolean flag=false;
+			for(ItemStack t : inv.items){
+				if(ItemStack.isSameItemSameTags(off, t)){
+					amount += t.getCount();
+					flag = true;
+				}
+			}
+			if(flag){
+				mc.getItemRenderer().renderAndDecorateItem(off,left-55,top);
+				mc.getItemRenderer().renderGuiItemDecorations(mc.font,off,left-55,top,amount+"");
+
+			}
+		}
+
 	}
 }
 
@@ -183,9 +244,13 @@ abstract class HookMinecraft implements IMinecraft {
 	@Shadow
 	protected int missTime;
 
-	@Shadow @Final @Mutable private User user;
+	@Shadow
+	@Final
+	@Mutable
+	private User user;
 
-	@Shadow protected abstract boolean startAttack();
+	@Shadow
+	protected abstract boolean startAttack();
 
 	@Shadow
 	protected abstract void pickBlock();
@@ -214,7 +279,7 @@ abstract class HookMinecraft implements IMinecraft {
 
 	@Override
 	public void setSession(User se){
-		user=se;
+		user = se;
 	}
 
 	@Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
@@ -304,7 +369,7 @@ abstract class HookPlayerController {
 abstract class HookPlayerEntry {
 
 	@Dynamic
-	@Inject(method = {"lambda$new$0","m_100608_"}, at = @At(value = "HEAD"), cancellable = true)
+	@Inject(method = {"lambda$new$0", "m_100608_"}, at = @At(value = "HEAD"), cancellable = true)
 	private void i(PlayerSocialManager manager, UUID uuid, String name, Button button, CallbackInfo info){
 		if(Screen.hasShiftDown()){
 			info.cancel();
@@ -319,7 +384,7 @@ abstract class HookPlayerEntry {
 
 @Mixin(LivingEntity.class)
 abstract class HookLivingEntity extends Entity {
-	private HookLivingEntity(EntityType<?> p_i48580_1_,Level p_i48580_2_){
+	private HookLivingEntity(EntityType<?> p_i48580_1_, Level p_i48580_2_){
 		super(p_i48580_1_, p_i48580_2_);
 	}
 
@@ -337,7 +402,7 @@ abstract class HookLivingEntity extends Entity {
 	 */
 	@Inject(method = "shouldShowName", at = @At("HEAD"), cancellable = true)
 	private void t(CallbackInfoReturnable<Boolean> info){
-		LocalPlayer player=Minecraft.getInstance().player;
+		LocalPlayer player = Minecraft.getInstance().player;
 		if(player == null)
 			return;
 		if(!((Object)this instanceof ArmorStand) && position().distanceTo(player.position()) < 25)
@@ -410,7 +475,8 @@ abstract class HookTileEntityRenderer {
 	}
 
 
-	@Shadow public abstract <E extends BlockEntity> void render(E p_112268_, float p_112269_, PoseStack p_112270_, MultiBufferSource p_112271_);
+	@Shadow
+	public abstract <E extends BlockEntity> void render(E p_112268_, float p_112269_, PoseStack p_112270_, MultiBufferSource p_112271_);
 
 	@Shadow
 	private static <T extends BlockEntity> void setupAndRender(BlockEntityRenderer<T> p_112285_, T p_112286_, float p_112287_, PoseStack p_112288_, MultiBufferSource p_112289_){
@@ -528,8 +594,9 @@ abstract class HookAbsClientPlayer extends Player {
 			}
 
 			f *= 1.0F - f1 * 0.15F;
-		}else if (Minecraft.getInstance().options.getCameraType().isFirstPerson() && this.isScoping()) {
+		}else if(Minecraft.getInstance().options.getCameraType().isFirstPerson() && this.isScoping()){
 			info.setReturnValue(0.1f);
+			return;
 		}
 		float fov = net.minecraftforge.client.ForgeHooksClient.getFieldOfView(this, f);
 		info.setReturnValue(fov);
@@ -621,7 +688,17 @@ abstract class HookDebugGui extends GuiComponent {
 	}
 }
 
-/** make no sense, just make IDE can fold annotations to hide long sentence */
+@Mixin(PacketUtils.class)
+abstract class HookPacketUtils{
+	@Inject(method = "ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/util/thread/BlockableEventLoop;)V",at = @At("HEAD"),cancellable = true)
+	private static <T extends PacketListener> void t(Packet<T> packet, T listener, BlockableEventLoop<?> p_131366_, CallbackInfo info){
+		info.cancel();
+	}
+}
+
+/**
+ * make no sense, just make IDE can fold annotations to hide long sentence
+ */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
 @interface fold {
