@@ -163,7 +163,6 @@ abstract class HookIngameGui {
 	@Inject(method = "handleChat", at = @At("HEAD"), cancellable = true)
 	private void i(ChatType type, Component cmp, UUID uuid, CallbackInfo info){
 		String str = cmp.getString();
-		System.out.println(str);
 		if(str.equals(Forgetest.last) && !(Minecraft.getInstance().screen instanceof ChatScreen)){
 			info.cancel();
 		}
@@ -685,14 +684,6 @@ abstract class HookDebugGui extends GuiComponent {
 			list.add(str);
 			info.setReturnValue(list);
 		}
-	}
-}
-
-@Mixin(PacketUtils.class)
-abstract class HookPacketUtils{
-	@Inject(method = "ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/util/thread/BlockableEventLoop;)V",at = @At("HEAD"),cancellable = true)
-	private static <T extends PacketListener> void t(Packet<T> packet, T listener, BlockableEventLoop<?> p_131366_, CallbackInfo info){
-		info.cancel();
 	}
 }
 
