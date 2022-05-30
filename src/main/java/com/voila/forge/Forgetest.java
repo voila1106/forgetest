@@ -24,6 +24,7 @@ import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.fml.javafmlmod.*;
 import org.apache.logging.log4j.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 import java.util.stream.*;
@@ -38,6 +39,8 @@ public class Forgetest {
 	private static final Logger LOGGER = LogManager.getLogger();
 
 	public static String last;
+	@Nullable
+	public static KeyMapping ofZoom;
 
 	public Forgetest(){
 		// Register the setup method for modloading
@@ -211,5 +214,19 @@ public class Forgetest {
 	public static void runDelay(Map<Integer, List<Runnable>> task){
 		delayedTask.putAll(task);
 	}
+
+	public static int getNameDistance(){
+		LocalPlayer player = Minecraft.getInstance().player;
+		int distance = 25;
+		if(ofZoom != null && ofZoom.isDown()){
+			distance *= 2;
+		}
+		assert player != null;
+		if(player.isScoping()){
+			distance *= 2;
+		}
+		return distance;
+	}
+
 
 }
