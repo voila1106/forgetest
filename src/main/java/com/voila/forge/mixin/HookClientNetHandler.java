@@ -1,6 +1,9 @@
 package com.voila.forge.mixin;
 
+import com.google.common.collect.*;
 import com.mojang.authlib.*;
+import com.mojang.blaze3d.platform.*;
+import com.mojang.blaze3d.systems.*;
 import com.mojang.blaze3d.vertex.*;
 import com.voila.forge.*;
 import net.minecraft.*;
@@ -133,7 +136,7 @@ abstract class HookLivingRenderer {
 		LocalPlayer player = Minecraft.getInstance().player;
 		if(player == null)
 			return;
-		if(!(entity instanceof ArmorStand) && player.position().distanceTo(entity.position()) < 25){
+		if(!(entity instanceof ArmorStand) && player.position().distanceTo(entity.position()) < Forgetest.getNameDistance()){
 			info.setReturnValue(true);
 		}
 	}
@@ -156,9 +159,12 @@ abstract class HookParticleManager {
  */
 @Mixin(Gui.class)
 abstract class HookIngameGui {
-	@Shadow protected int screenWidth;
+	@Shadow
+	protected int screenWidth;
 
-	@Shadow protected int screenHeight;
+	@Shadow
+	protected int screenHeight;
+
 
 	@Inject(method = "handleChat", at = @At("HEAD"), cancellable = true)
 	private void i(ChatType type, Component cmp, UUID uuid, CallbackInfo info){
@@ -181,37 +187,38 @@ abstract class HookIngameGui {
 		assert mc.player != null;
 		if(mc.player.isSpectator())
 			return;
-		int left=screenWidth/2-91;
-		int top=screenHeight-19;
 		Inventory inv = mc.player.getInventory();
-		ItemStack main = inv.items.get(inv.selected);
+		ItemStack main = inv.getSelected();
 		ItemStack off = inv.offhand.get(0);
-		if(main.getItem() != Items.AIR){
-			int amount=main.getCount();
-			boolean flag=false;
+		int left = screenWidth / 2 - 91;
+		int top = screenHeight - 19;
+		RenderSystem.disableBlend();
+		if(main.getItem() != Items.AIR && !arrow(main,true,left,top)){
+			int amount = main.getCount();
+			boolean flag = false;
 			NonNullList<ItemStack> items = inv.items;
 			for(int i = 0; i < items.size(); i++){
-				if(i==inv.selected)
+				if(i == inv.selected)
 					continue;
 				ItemStack t = items.get(i);
-				if(ItemStack.isSameItemSameTags(main,t)){
+				if(ItemStack.isSameItemSameTags(main, t)){
 					amount += t.getCount();
-					flag=true;
+					flag = true;
 				}
 			}
-			if(ItemStack.isSameItemSameTags(main,off)){
-				amount+=off.getCount();
-				flag=true;
+			if(ItemStack.isSameItemSameTags(main, off)){
+				amount += off.getCount();
+				flag = true;
 			}
 			if(flag){
-				mc.getItemRenderer().renderAndDecorateItem(main,left+182+20,top);
-				mc.getItemRenderer().renderGuiItemDecorations(mc.font,main,left+182+20,top,amount+"");
+				mc.getItemRenderer().renderAndDecorateItem(main, left + 182 + 20, top);
+				mc.getItemRenderer().renderGuiItemDecorations(mc.font, main, left + 182 + 20, top, amount + "");
 			}
 
 		}
-		if(off.getItem() != Items.AIR){
-			int amount=off.getCount();
-			boolean flag=false;
+		if(off.getItem() != Items.AIR && !arrow(off,false,left,top)){
+			int amount = off.getCount();
+			boolean flag = false;
 			for(ItemStack t : inv.items){
 				if(ItemStack.isSameItemSameTags(off, t)){
 					amount += t.getCount();
@@ -219,13 +226,42 @@ abstract class HookIngameGui {
 				}
 			}
 			if(flag){
-				mc.getItemRenderer().renderAndDecorateItem(off,left-55,top);
-				mc.getItemRenderer().renderGuiItemDecorations(mc.font,off,left-55,top,amount+"");
+				mc.getItemRenderer().renderAndDecorateItem(off, left - 55, top);
+				mc.getItemRenderer().renderGuiItemDecorations(mc.font, off, left - 55, top, amount + "");
 
 			}
 		}
+		RenderSystem.enableBlend();
 
 	}
+	private static boolean arrow(ItemStack item, boolean mainHand, int left, int top){
+		if(item.getItem()==Items.BOW || item.getItem() == Items.CROSSBOW){
+			Minecraft mc=Minecraft.getInstance();
+			LocalPlayer player=mc.player;
+			assert player != null;
+			Inventory inv= player.getInventory();
+			int amount=0;
+			for(ItemStack t: inv.items){
+				if(t.getItem()==Items.ARROW)
+					amount+=t.getCount();
+			}
+			if(inv.offhand.get(0).getItem()==Items.ARROW)
+				amount+=inv.offhand.get(0).getCount();
+			if(mainHand){
+				mc.getItemRenderer().renderAndDecorateItem(Items.ARROW.getDefaultInstance(), left + 182 + 20, top);
+				mc.getItemRenderer().renderGuiItemDecorations(mc.font, Items.ARROW.getDefaultInstance(), left + 182 + 20, top, amount + "");
+			}else {
+				mc.getItemRenderer().renderAndDecorateItem(Items.ARROW.getDefaultInstance(), left - 55, top);
+				mc.getItemRenderer().renderGuiItemDecorations(mc.font, Items.ARROW.getDefaultInstance(), left - 55, top, amount + "");
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+
 }
 
 /**
@@ -404,7 +440,7 @@ abstract class HookLivingEntity extends Entity {
 		LocalPlayer player = Minecraft.getInstance().player;
 		if(player == null)
 			return;
-		if(!((Object)this instanceof ArmorStand) && position().distanceTo(player.position()) < 25)
+		if(!((Object)this instanceof ArmorStand) && position().distanceTo(player.position()) < Forgetest.getNameDistance())
 			info.setReturnValue(true);
 	}
 
@@ -472,10 +508,6 @@ abstract class HookTileEntityRenderer {
 	@Shadow
 	private static void tryRender(BlockEntity tileEntityIn, Runnable runnableIn){
 	}
-
-
-	@Shadow
-	public abstract <E extends BlockEntity> void render(E p_112268_, float p_112269_, PoseStack p_112270_, MultiBufferSource p_112271_);
 
 	@Shadow
 	private static <T extends BlockEntity> void setupAndRender(BlockEntityRenderer<T> p_112285_, T p_112286_, float p_112287_, PoseStack p_112288_, MultiBufferSource p_112289_){
@@ -651,6 +683,8 @@ abstract class HookMainMenu extends Screen {
 //	}
 //}
 
+
+/** script press key */
 @SuppressWarnings("all")
 @Mixin(KeyMapping.class)
 abstract class HookKeyBinding {
@@ -672,8 +706,18 @@ abstract class HookKeyBinding {
 			info.setReturnValue(true);
 		}
 	}
+
+	/** Optifine zoom key */
+	@Inject(method = "<init>(Ljava/lang/String;Lcom/mojang/blaze3d/platform/InputConstants$Type;ILjava/lang/String;)V", at = @At("RETURN"))
+	private void reg(String name, InputConstants.Type p_90826_, int p_90827_, String p_90828_, CallbackInfo info){
+		KeyMapping k = (KeyMapping)(Object)this;
+		if(name.equals("of.key.zoom")){
+			Forgetest.ofZoom = k;
+		}
+	}
 }
 
+/** Script waitTicks */
 @Mixin(DebugScreenOverlay.class)
 abstract class HookDebugGui extends GuiComponent {
 	@Inject(method = "getGameInformation", at = @At("RETURN"), cancellable = true)
@@ -687,9 +731,7 @@ abstract class HookDebugGui extends GuiComponent {
 	}
 }
 
-/**
- * make no sense, just make IDE can fold annotations to hide long sentence
- */
+/** make no sense, just make IDE can fold annotations to hide long sentence */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
 @interface fold {
