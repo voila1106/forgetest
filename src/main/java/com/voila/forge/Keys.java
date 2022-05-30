@@ -2,9 +2,7 @@ package com.voila.forge;
 
 import net.minecraft.*;
 import net.minecraft.client.*;
-import net.minecraft.client.gui.screens.social.*;
 import net.minecraft.client.player.*;
-import net.minecraft.locale.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.level.block.*;
 import net.minecraftforge.client.*;
@@ -13,7 +11,6 @@ import net.minecraftforge.eventbus.api.*;
 import org.lwjgl.glfw.*;
 
 import java.io.*;
-import java.lang.reflect.*;
 import java.util.*;
 
 public class Keys {
