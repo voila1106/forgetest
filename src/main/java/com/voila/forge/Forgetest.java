@@ -26,6 +26,7 @@ import net.minecraftforge.fml.javafmlmod.*;
 import org.apache.logging.log4j.*;
 import org.jetbrains.annotations.*;
 
+import java.io.*;
 import java.util.*;
 import java.util.stream.*;
 
@@ -39,6 +40,9 @@ public class Forgetest {
 	private static final Logger LOGGER = LogManager.getLogger();
 
 	public static String last;
+	public static boolean removeUseDelay;
+	public static boolean removeDestroyDelay;
+
 	@Nullable
 	public static KeyMapping ofZoom;
 
@@ -61,6 +65,9 @@ public class Forgetest {
 		// Register ourselves for server and other game events we are interested in
 		MinecraftForge.EVENT_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(Keys.class);
+
+		removeUseDelay= Boolean.parseBoolean(getConfig("removeUseDelay"));
+		removeDestroyDelay =Boolean.parseBoolean(getConfig("removeDestroyDelay"));
 	}
 
 	private void setup(final FMLCommonSetupEvent event){
@@ -226,6 +233,60 @@ public class Forgetest {
 			distance *= 2;
 		}
 		return distance;
+	}
+
+	public static String getConfig(String key){
+		new File("config/"+ID+"/").mkdirs();
+		File config=new File("config/"+ID+"/config.txt");
+		try{
+			config.createNewFile();
+			String line;
+			BufferedReader br=new BufferedReader(new FileReader(config));
+			while((line=br.readLine())!=null){
+				String[] c=line.split("=",2);
+				if(c.length<2)
+					continue;
+				if(c[0].equals(key)){
+					return c[1];
+				}
+			}
+			br.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		return "";
+	}
+
+	public static void setConfig(String key,String value){
+		new File("config/"+ID+"/").mkdirs();
+		File config=new File("config/"+ID+"/config.txt");
+		try{
+			config.createNewFile();
+			String line;
+			boolean found=false;
+			StringBuilder sb=new StringBuilder();
+			BufferedReader br=new BufferedReader(new FileReader(config));
+			while((line=br.readLine())!=null){
+				String[] c=line.split("=",2);
+				if(c.length<2)
+					continue;
+				if(c[0].equals(key)){
+					c[1]=value;
+					found=true;
+				}
+				sb.append(c[0]).append('=').append(c[1]).append('\n');
+			}
+			if(!found){
+				sb.append(key).append('=').append(value).append('\n');
+			}
+			br.close();
+			FileWriter fr=new FileWriter(config);
+			fr.write(sb.toString());
+			fr.flush();
+			fr.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 
 

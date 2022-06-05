@@ -18,5 +18,9 @@
     "title.forgetest.uuid": "UUID",
     "title.forgetest.token": "Token",
     "title.forgetest.current": "Current username: ",
-    "title.forgetest.selectScript": "Select Script"
+    "title.forgetest.selectScript": "Select Script",
+    "title.forgetest.on": "ON",
+    "title.forgetest.off": "OFF",
+    "title.forgetest.useDelay": "Remove Use Delay",
+    "title.forgetest.destroyDelay": "Remove Destroy Delay"
 }

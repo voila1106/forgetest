@@ -15,6 +15,7 @@
         "HookClientNetHandler",
         "HookClientPlayerEntity",
         "HookDebugGui",
+        "HookDestroyDelay",
         "HookEntityRenderer",
         "HookFluidBlockRenderer",
         "HookGameRenderer",
@@ -27,6 +28,7 @@
         "HookParticleManager",
         "HookPlayerController",
         "HookPlayerEntry",
+        "HookServerListScreen",
         "HookSoundEngine",
         "HookTileEntityRenderer",
         "HookWorldRenderer"

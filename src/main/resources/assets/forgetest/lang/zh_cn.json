@@ -18,5 +18,9 @@
     "title.forgetest.uuid": "UUID",
     "title.forgetest.token": "Token",
     "title.forgetest.current": "当前用户名: ",
-    "title.forgetest.selectScript": "选择脚本"
+    "title.forgetest.selectScript": "选择脚本",
+    "title.forgetest.on": "开",
+    "title.forgetest.off": "关",
+    "title.forgetest.useDelay": "移除使用延迟",
+    "title.forgetest.destroyDelay": "移除破坏延迟"
 }

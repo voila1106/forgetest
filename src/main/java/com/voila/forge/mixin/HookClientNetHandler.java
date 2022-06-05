@@ -1,6 +1,5 @@
 package com.voila.forge.mixin;
 
-import com.google.common.collect.*;
 import com.mojang.authlib.*;
 import com.mojang.blaze3d.platform.*;
 import com.mojang.blaze3d.systems.*;
@@ -12,6 +11,7 @@ import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.components.events.*;
 import net.minecraft.client.gui.screens.*;
+import net.minecraft.client.gui.screens.multiplayer.*;
 import net.minecraft.client.gui.screens.social.*;
 import net.minecraft.client.multiplayer.*;
 import net.minecraft.client.particle.*;
@@ -25,11 +25,8 @@ import net.minecraft.client.resources.sounds.*;
 import net.minecraft.client.sounds.*;
 import net.minecraft.core.*;
 import net.minecraft.core.particles.*;
-import net.minecraft.network.*;
 import net.minecraft.network.chat.*;
-import net.minecraft.network.protocol.*;
 import net.minecraft.sounds.*;
-import net.minecraft.util.thread.*;
 import net.minecraft.world.effect.*;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.decoration.*;
@@ -290,6 +287,8 @@ abstract class HookMinecraft implements IMinecraft {
 	@Shadow
 	protected abstract void pickBlock();
 
+	@Shadow private int rightClickDelay;
+
 	@Override
 	public void pick(){
 		pickBlock();
@@ -304,7 +303,6 @@ abstract class HookMinecraft implements IMinecraft {
 	@Override
 	public void attack(){
 		startAttack();
-		pick();
 	}
 
 	@Override
@@ -330,8 +328,27 @@ abstract class HookMinecraft implements IMinecraft {
 	}
 
 	@Inject(method = "startAttack", at = @At("HEAD"))
-	private void i(CallbackInfoReturnable<Boolean> cir){
+	private void sa(CallbackInfoReturnable<Boolean> cir){
 		missTime = 0;
+	}
+
+	/** remove use delay */
+	@Inject(method = "handleKeybinds",at = @At("HEAD"))
+	private void k(CallbackInfo info){
+		if(Forgetest.removeUseDelay)
+			rightClickDelay=0;
+	}
+}
+
+/** remove destroy delay */
+@Mixin(MultiPlayerGameMode.class)
+abstract class HookDestroyDelay{
+	@Shadow private int destroyDelay;
+
+	@Inject(method = "continueDestroyBlock",at = @At("HEAD"))
+	private void i(BlockPos p_105284_, Direction p_105285_, CallbackInfoReturnable<Boolean> cir){
+		if(Forgetest.removeDestroyDelay)
+			destroyDelay=0;
 	}
 }
 
@@ -404,7 +421,7 @@ abstract class HookPlayerController {
 abstract class HookPlayerEntry {
 
 	@Dynamic
-	@Inject(method = {"lambda$new$0", "m_100608_"}, at = @At(value = "HEAD"), cancellable = true)
+	@Inject(method = "lambda$new$0", at = @At(value = "HEAD"), cancellable = true)
 	private void i(PlayerSocialManager manager, UUID uuid, String name, Button button, CallbackInfo info){
 		if(Screen.hasShiftDown()){
 			info.cancel();
@@ -728,6 +745,18 @@ abstract class HookDebugGui extends GuiComponent {
 			list.add(str);
 			info.setReturnValue(list);
 		}
+	}
+}
+
+@Mixin(JoinMultiplayerScreen.class)
+abstract class HookServerListScreen extends Screen{
+	private HookServerListScreen(Component p_96550_){
+		super(p_96550_);
+	}
+
+	@Inject(method = "<init>",at = @At("RETURN"))
+	private void init(Screen p_99688_, CallbackInfo ci){
+		((MutableComponent)title).append(" (").append(Minecraft.getInstance().getUser().getName()).append(")");
 	}
 }
 

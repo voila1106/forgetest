@@ -1,7 +1,7 @@
 package com.voila.forge;
 
-import com.mojang.blaze3d.systems.*;
 import com.mojang.blaze3d.vertex.*;
+import net.minecraft.*;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.components.*;
@@ -27,7 +27,9 @@ public class ConfigXrayScreen extends Screen {
 	BlockList blockList;
 	EditBox addField;
 	Button addButton;
-	public SugList sugList;
+	SugList sugList;
+	Button useButton;
+	Button destroyButton;
 
 	private static final List<String> allBlocks = new ArrayList<>();
 
@@ -76,17 +78,17 @@ public class ConfigXrayScreen extends Screen {
 			new TranslatableComponent("title." + Forgetest.ID + ".add"), button ->
 		{
 			String name = addField.getValue();
-			LocalPlayer player=Minecraft.getInstance().player;
+			LocalPlayer player = Minecraft.getInstance().player;
 			assert player != null;
 			if(name.equals("hand")){
-				ItemStack item=player.getInventory().getSelected();
-				Block block=Block.byItem(item.getItem());
-				if(block!=Blocks.AIR){
+				ItemStack item = player.getInventory().getSelected();
+				Block block = Block.byItem(item.getItem());
+				if(block != Blocks.AIR){
 					addXrayBlock(block);
 				}
 			}else if(name.equals("look")){
-				HitResult result= player.pick(20,0,false);
-				if(result.getType()== HitResult.Type.BLOCK){
+				HitResult result = player.pick(20, 0, false);
+				if(result.getType() == HitResult.Type.BLOCK){
 					addXrayBlock(Minecraft.getInstance().level.getBlockState(((BlockHitResult)result).getBlockPos()).getBlock());
 				}
 			}
@@ -107,6 +109,35 @@ public class ConfigXrayScreen extends Screen {
 			Minecraft.getInstance().setScreen(null));
 		blockList = new BlockList();
 		sugList = new SugList();
+		int buttonWidth= font.width(new TranslatableComponent("title." + Forgetest.ID + ".useDelay").append(": ").append(new TranslatableComponent("title." + Forgetest.ID + ".off")).getVisualOrderText())+10;
+		useButton = new Button(width-buttonWidth, 115, buttonWidth, 20,
+			new TranslatableComponent("title." + Forgetest.ID + ".useDelay").append(": ").
+				append(Forgetest.removeUseDelay ?
+					new TranslatableComponent("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+					new TranslatableComponent("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)),
+			(button) -> {
+				Forgetest.removeUseDelay = !Forgetest.removeUseDelay;
+				useButton.setMessage(new TranslatableComponent("title." + Forgetest.ID + ".useDelay").append(": ").
+					append(Forgetest.removeUseDelay ?
+						new TranslatableComponent("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+						new TranslatableComponent("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
+				Forgetest.setConfig("removeUseDelay",Forgetest.removeUseDelay+"");
+			});
+		addRenderableWidget(useButton);
+		destroyButton = new Button(width-buttonWidth, 90, buttonWidth, 20,
+			new TranslatableComponent("title." + Forgetest.ID + ".destroyDelay").append(": ").
+				append(Forgetest.removeDestroyDelay ?
+					new TranslatableComponent("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+					new TranslatableComponent("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)),
+			(button) -> {
+				Forgetest.removeDestroyDelay = !Forgetest.removeDestroyDelay;
+				destroyButton.setMessage(new TranslatableComponent("title." + Forgetest.ID + ".destroyDelay").append(": ").
+					append(Forgetest.removeDestroyDelay ?
+						new TranslatableComponent("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+						new TranslatableComponent("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
+				Forgetest.setConfig("removeDestroyDelay",Forgetest.removeDestroyDelay +"");
+			});
+		addRenderableWidget(destroyButton);
 		addWidget(sugList);
 		addWidget(blockList);
 		addWidget(addField);
@@ -193,6 +224,8 @@ public class ConfigXrayScreen extends Screen {
 		addButton.render(stack, mouseX, mouseY, partialTicks);
 		addField.render(stack, mouseX, mouseY, partialTicks);
 		sugList.render(stack, mouseX, mouseY, partialTicks);
+		useButton.render(stack, mouseX, mouseY, partialTicks);
+		destroyButton.render(stack, mouseX, mouseY, partialTicks);
 		super.render(stack, mouseX, mouseY, partialTicks);
 	}
 
