@@ -24,6 +24,7 @@ public class DamageParticle extends TextureSheetParticle {
 		hasPhysics = false;
 		this.amount = Math.max(amount, 0);
 		sprite = as;
+		scale(2);
 		setSprite(sprite.get(amount, 2048));
 		if(this.yd < 0)
 			this.yd = -this.yd;
