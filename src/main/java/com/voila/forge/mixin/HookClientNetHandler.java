@@ -421,7 +421,7 @@ abstract class HookPlayerController {
 abstract class HookPlayerEntry {
 
 	@Dynamic
-	@Inject(method = "lambda$new$0", at = @At(value = "HEAD"), cancellable = true)
+	@Inject(method = {"lambda$new$0", "m_100608_"}, at = @At(value = "HEAD"), cancellable = true)
 	private void i(PlayerSocialManager manager, UUID uuid, String name, Button button, CallbackInfo info){
 		if(Screen.hasShiftDown()){
 			info.cancel();
