@@ -110,7 +110,7 @@ public class ConfigXrayScreen extends Screen {
 		blockList = new BlockList();
 		sugList = new SugList();
 		int buttonWidth= font.width(new TranslatableComponent("title." + Forgetest.ID + ".useDelay").append(": ").append(new TranslatableComponent("title." + Forgetest.ID + ".off")).getVisualOrderText())+10;
-		useButton = new Button(width-buttonWidth, 115, buttonWidth, 20,
+		useButton = new Button(blockList.getRowRight(), 115, buttonWidth, 20,
 			new TranslatableComponent("title." + Forgetest.ID + ".useDelay").append(": ").
 				append(Forgetest.removeUseDelay ?
 					new TranslatableComponent("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
@@ -124,7 +124,7 @@ public class ConfigXrayScreen extends Screen {
 				Forgetest.setConfig("removeUseDelay",Forgetest.removeUseDelay+"");
 			});
 		addRenderableWidget(useButton);
-		destroyButton = new Button(width-buttonWidth, 90, buttonWidth, 20,
+		destroyButton = new Button(blockList.getRowRight(), 90, buttonWidth, 20,
 			new TranslatableComponent("title." + Forgetest.ID + ".destroyDelay").append(": ").
 				append(Forgetest.removeDestroyDelay ?
 					new TranslatableComponent("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
