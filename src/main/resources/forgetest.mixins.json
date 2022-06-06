@@ -24,6 +24,7 @@
         "HookKeyBinding",
         "HookLivingEntity",
         "HookLivingRenderer",
+        "HookLoadingTerrain",
         "HookMainMenu",
         "HookMinecraft",
         "HookParticleManager",

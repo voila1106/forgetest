@@ -733,6 +733,7 @@ abstract class HookDebugGui extends GuiComponent {
 	}
 }
 
+/** add username to multiplayer screen */
 @Mixin(JoinMultiplayerScreen.class)
 abstract class HookServerListScreen extends Screen{
 	private HookServerListScreen(Component p_96550_){
@@ -745,6 +746,7 @@ abstract class HookServerListScreen extends Screen{
 	}
 }
 
+/** increase chat line limit */
 @Mixin(ChatComponent.class)
 abstract class HookChatComponent{
 	@Shadow protected abstract void removeById(int p_93804_);
@@ -784,6 +786,34 @@ abstract class HookChatComponent{
 			while(this.allMessages.size() > 2000) {
 				this.allMessages.remove(this.allMessages.size() - 1);
 			}
+		}
+	}
+}
+
+/** remove 2s "loading terrain" */
+@Mixin(ReceivingLevelScreen.class)
+abstract class HookLoadingTerrain extends Screen{
+	@Shadow private boolean oneTickSkipped;
+	@Shadow @Final private long createdAt;
+	@Shadow private boolean loadingPacketsReceived;
+	private HookLoadingTerrain(Component p_96550_){super(p_96550_);}
+
+	@Inject(method = "tick",at = @At("HEAD"),cancellable = true)
+	private void i(CallbackInfo info){
+		info.cancel();
+
+		boolean flag = this.oneTickSkipped || System.currentTimeMillis() > this.createdAt;
+		if (flag && this.minecraft != null && this.minecraft.player != null) {
+			BlockPos blockpos = this.minecraft.player.blockPosition();
+			boolean flag1 = this.minecraft.level != null && this.minecraft.level.isOutsideBuildHeight(blockpos.getY());
+			if (flag1 || this.minecraft.levelRenderer.isChunkCompiled(blockpos)) {
+				this.onClose();
+			}
+
+			if (this.loadingPacketsReceived) {
+				this.oneTickSkipped = true;
+			}
+
 		}
 	}
 }
