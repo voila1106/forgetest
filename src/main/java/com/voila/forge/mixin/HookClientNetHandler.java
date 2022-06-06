@@ -27,6 +27,7 @@ import net.minecraft.core.*;
 import net.minecraft.core.particles.*;
 import net.minecraft.network.chat.*;
 import net.minecraft.sounds.*;
+import net.minecraft.util.*;
 import net.minecraft.world.effect.*;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.decoration.*;
@@ -266,34 +267,18 @@ abstract class HookIngameGui {
  */
 @Mixin(Minecraft.class)
 abstract class HookMinecraft implements IMinecraft {
-	@Shadow
-	public LocalPlayer player;
-
-	@Shadow
-	protected abstract void startUseItem();
-
-
-	@Shadow
-	protected int missTime;
-
-	@Shadow
-	@Final
-	@Mutable
-	private User user;
-
-	@Shadow
-	protected abstract boolean startAttack();
-
-	@Shadow
-	protected abstract void pickBlock();
-
+	@Shadow public LocalPlayer player;
+	@Shadow protected abstract void startUseItem();
+	@Shadow protected int missTime;
+	@Shadow @Final @Mutable private User user;
+	@Shadow protected abstract boolean startAttack();
+	@Shadow protected abstract void pickBlock();
 	@Shadow private int rightClickDelay;
 
 	@Override
 	public void pick(){
 		pickBlock();
 	}
-
 
 	@Override
 	public void use(){
@@ -757,6 +742,49 @@ abstract class HookServerListScreen extends Screen{
 	@Inject(method = "<init>",at = @At("RETURN"))
 	private void init(Screen p_99688_, CallbackInfo ci){
 		((MutableComponent)title).append(" (").append(Minecraft.getInstance().getUser().getName()).append(")");
+	}
+}
+
+@Mixin(ChatComponent.class)
+abstract class HookChatComponent{
+	@Shadow protected abstract void removeById(int p_93804_);
+	@Shadow public abstract int getWidth();
+	@Shadow public abstract double getScale();
+	@Shadow @Final private Minecraft minecraft;
+	@Shadow protected abstract boolean isChatFocused();
+	@Shadow private int chatScrollbarPos;
+	@Shadow private boolean newMessageSinceScroll;
+	@Shadow public abstract void scrollChat(int p_205361_);
+	@Shadow @Final private List<GuiMessage<FormattedCharSequence>> trimmedMessages;
+	@Shadow @Final private List<GuiMessage<Component>> allMessages;
+
+	@Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V",at = @At("HEAD"),cancellable = true)
+	private void i(Component content, int hiddenId, int id, boolean exclude, CallbackInfo info){
+		info.cancel();
+
+		if (hiddenId != 0) {
+			this.removeById(hiddenId);
+		}
+		int i = Mth.floor((double)this.getWidth() / this.getScale());
+		List<FormattedCharSequence> list = ComponentRenderUtils.wrapComponents(content, i, this.minecraft.font);
+		boolean flag = this.isChatFocused();
+		for(FormattedCharSequence formattedcharsequence : list) {
+			if (flag && this.chatScrollbarPos > 0) {
+				this.newMessageSinceScroll = true;
+				this.scrollChat(1);
+			}
+			this.trimmedMessages.add(0, new GuiMessage<>(id, formattedcharsequence, hiddenId));
+		}
+		while(this.trimmedMessages.size() > 2000) {
+			this.trimmedMessages.remove(this.trimmedMessages.size() - 1);
+		}
+		if (!exclude) {
+			this.allMessages.add(0, new GuiMessage<>(id, content, hiddenId));
+
+			while(this.allMessages.size() > 2000) {
+				this.allMessages.remove(this.allMessages.size() - 1);
+			}
+		}
 	}
 }
 
