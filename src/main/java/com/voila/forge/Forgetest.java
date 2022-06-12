@@ -1,18 +1,25 @@
 package com.voila.forge;
 
+import com.mojang.blaze3d.systems.*;
+import com.mojang.blaze3d.vertex.*;
+import com.mojang.math.*;
 import net.minecraft.Util;
 import net.minecraft.*;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.player.*;
+import net.minecraft.client.renderer.*;
 import net.minecraft.core.*;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.*;
+import net.minecraft.util.*;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.*;
+import net.minecraft.world.phys.*;
+import net.minecraft.world.phys.shapes.*;
 import net.minecraftforge.api.distmarker.*;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.common.*;
@@ -42,6 +49,7 @@ public class Forgetest {
 	public static String last;
 	public static boolean removeUseDelay;
 	public static boolean removeDestroyDelay;
+	public static Map<Shape,Vec3> shapes=new HashMap<>();
 
 	@Nullable
 	public static KeyMapping ofZoom;
@@ -66,8 +74,8 @@ public class Forgetest {
 		MinecraftForge.EVENT_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(Keys.class);
 
-		removeUseDelay= Boolean.parseBoolean(getConfig("removeUseDelay"));
-		removeDestroyDelay =Boolean.parseBoolean(getConfig("removeDestroyDelay"));
+		removeUseDelay = Boolean.parseBoolean(getConfig("removeUseDelay"));
+		removeDestroyDelay = Boolean.parseBoolean(getConfig("removeDestroyDelay"));
 	}
 
 	private void setup(final FMLCommonSetupEvent event){
@@ -120,7 +128,7 @@ public class Forgetest {
 	@SubscribeEvent
 	public void onOverlay(RenderBlockOverlayEvent event){
 		//if(event.getOverlayType() != RenderBlockOverlayEvent.OverlayType.BLOCK)
-			event.setCanceled(true);
+		event.setCanceled(true);
 	}
 
 	@SubscribeEvent
@@ -236,15 +244,15 @@ public class Forgetest {
 	}
 
 	public static String getConfig(String key){
-		new File("config/"+ID+"/").mkdirs();
-		File config=new File("config/"+ID+"/config.txt");
+		new File("config/" + ID + "/").mkdirs();
+		File config = new File("config/" + ID + "/config.txt");
 		try{
 			config.createNewFile();
 			String line;
-			BufferedReader br=new BufferedReader(new FileReader(config));
-			while((line=br.readLine())!=null){
-				String[] c=line.split("=",2);
-				if(c.length<2)
+			BufferedReader br = new BufferedReader(new FileReader(config));
+			while((line = br.readLine()) != null){
+				String[] c = line.split("=", 2);
+				if(c.length < 2)
 					continue;
 				if(c[0].equals(key)){
 					return c[1];
@@ -257,22 +265,22 @@ public class Forgetest {
 		return "";
 	}
 
-	public static void setConfig(String key,String value){
-		new File("config/"+ID+"/").mkdirs();
-		File config=new File("config/"+ID+"/config.txt");
+	public static void setConfig(String key, String value){
+		new File("config/" + ID + "/").mkdirs();
+		File config = new File("config/" + ID + "/config.txt");
 		try{
 			config.createNewFile();
 			String line;
-			boolean found=false;
-			StringBuilder sb=new StringBuilder();
-			BufferedReader br=new BufferedReader(new FileReader(config));
-			while((line=br.readLine())!=null){
-				String[] c=line.split("=",2);
-				if(c.length<2)
+			boolean found = false;
+			StringBuilder sb = new StringBuilder();
+			BufferedReader br = new BufferedReader(new FileReader(config));
+			while((line = br.readLine()) != null){
+				String[] c = line.split("=", 2);
+				if(c.length < 2)
 					continue;
 				if(c[0].equals(key)){
-					c[1]=value;
-					found=true;
+					c[1] = value;
+					found = true;
 				}
 				sb.append(c[0]).append('=').append(c[1]).append('\n');
 			}
@@ -280,7 +288,7 @@ public class Forgetest {
 				sb.append(key).append('=').append(value).append('\n');
 			}
 			br.close();
-			FileWriter fr=new FileWriter(config);
+			FileWriter fr = new FileWriter(config);
 			fr.write(sb.toString());
 			fr.flush();
 			fr.close();
@@ -289,5 +297,39 @@ public class Forgetest {
 		}
 	}
 
+	@SubscribeEvent
+	public void onRenderWorld(RenderLevelLastEvent event){
+		//renderShape(event.getPoseStack(), shape,0,100,0,1,1,1,1);
+
+	}
+
+	public static void renderShape(PoseStack stack, Shape shape, double x, double y, double z){
+		RenderSystem.enableDepthTest();
+		RenderSystem.setShader(GameRenderer::getPositionColorShader);
+		VertexConsumer buffer= Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(RenderType.LINES);
+		RenderSystem.disableTexture();
+		RenderSystem.disableBlend();
+		RenderSystem.lineWidth(1.0F);
+		Vec3 pos=Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+		float r=shape.getColor().x();
+		float g=shape.getColor().y();
+		float b=shape.getColor().z();
+		float a=shape.getColor().w();
+
+		shape.forAllEdges((minX, minY, minZ, maxX, maxY, maxZ) -> {
+			float f = (float)(maxX-minX);
+			float f1 = (float)(maxY-minY);
+			float f2 = (float)(maxZ-minZ);
+			float f3 = Mth.sqrt(f * f + f1 * f1 + f2 * f2);
+			f /= f3;
+			f1 /= f3;
+			f2 /= f3;
+
+			buffer.vertex(stack.last().pose(), (float)(minX + x-pos.x), (float)(minY + y-pos.y),(float)(minZ + z-pos.z)).color(r, g, b, a).normal(stack.last().normal(),f,f1,f2).endVertex();
+			buffer.vertex(stack.last().pose(),(float)(maxX + x-pos.x), (float)(maxY + y-pos.y),(float)(maxZ + z-pos.z)).color(r, g, b, a).normal(stack.last().normal(),f,f1,f2).endVertex();
+		});
+		RenderSystem.enableBlend();
+		RenderSystem.enableTexture();
+	}
 
 }

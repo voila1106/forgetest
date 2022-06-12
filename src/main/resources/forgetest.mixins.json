@@ -15,6 +15,7 @@
         "HookChunkRender",
         "HookClientNetHandler",
         "HookClientPlayerEntity",
+        "HookCommandPacket",
         "HookDebugGui",
         "HookDestroyDelay",
         "HookEntityRenderer",

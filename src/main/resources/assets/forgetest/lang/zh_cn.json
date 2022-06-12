@@ -22,5 +22,6 @@
     "title.forgetest.on": "开",
     "title.forgetest.off": "关",
     "title.forgetest.useDelay": "移除使用延迟",
-    "title.forgetest.destroyDelay": "移除破坏延迟"
+    "title.forgetest.destroyDelay": "移除破坏延迟",
+    "msg.forgetest.invalidColor": "颜色无效"
 }

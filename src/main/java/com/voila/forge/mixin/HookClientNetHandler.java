@@ -4,7 +4,11 @@ import com.mojang.authlib.*;
 import com.mojang.blaze3d.platform.*;
 import com.mojang.blaze3d.systems.*;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.brigadier.*;
+import com.mojang.brigadier.exceptions.*;
+import com.mojang.math.*;
 import com.voila.forge.*;
+import com.voila.forge.command.*;
 import net.minecraft.*;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.*;
@@ -23,9 +27,11 @@ import net.minecraft.client.renderer.culling.*;
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.resources.sounds.*;
 import net.minecraft.client.sounds.*;
+import net.minecraft.commands.*;
 import net.minecraft.core.*;
 import net.minecraft.core.particles.*;
 import net.minecraft.network.chat.*;
+import net.minecraft.network.protocol.game.*;
 import net.minecraft.sounds.*;
 import net.minecraft.util.*;
 import net.minecraft.world.effect.*;
@@ -64,24 +70,36 @@ abstract class HookClientPlayerEntity extends AbstractClientPlayer {
 
 	@Inject(method = "chat", at = @At("HEAD"), cancellable = true)
 	private void chat(String message, CallbackInfo info){
-		if(message.startsWith("/.check"))
+		if(message.startsWith("/.check")){
 			info.cancel();
-		else
-			return;
-		String[] args = message.split(" ");
-		if(args.length < 2){
-			Forgetest.sendMessage(ChatFormatting.RED + "未输入玩家");
-			return;
-		}
-		String name = args[1];
-		for(Player t : clientLevel.players()){
-			if(t.getName().getString().equals(name)){
-				Forgetest.runDelay(5, () -> Forgetest.checkInv(t, false));
+			String[] args = message.split(" ");
+			if(args.length < 2){
+				Forgetest.sendMessage(ChatFormatting.RED + "未输入玩家");
 				return;
 			}
-		}
-		Forgetest.sendMessage(ChatFormatting.RED + "找不到玩家");
+			String name = args[1];
+			for(Player t : clientLevel.players()){
+				if(t.getName().getString().equals(name)){
+					Forgetest.runDelay(5, () -> Forgetest.checkInv(t, false));
+					return;
+				}
+			}
+			Forgetest.sendMessage(ChatFormatting.RED + "找不到玩家");
 
+		}else if(message.startsWith("/sphere ")){
+			info.cancel();
+			ClientPacketListener connection = Minecraft.getInstance().getConnection();
+			if(connection != null){
+				CommandDispatcher<SharedSuggestionProvider> commandDispatcher = connection.getCommands();
+				CommandSourceStack commandSource = Minecraft.getInstance().player.createCommandSourceStack();
+				try{
+					commandDispatcher.execute(message.substring(1), commandSource);
+				}catch(CommandSyntaxException e){
+					commandSource.sendFailure(new TextComponent(e.getMessage()).withStyle(ChatFormatting.RED));
+				}
+
+			}
+		}
 	}
 }
 
@@ -191,7 +209,7 @@ abstract class HookIngameGui {
 		int left = screenWidth / 2 - 91;
 		int top = screenHeight - 19;
 		RenderSystem.disableBlend();
-		if(main.getItem() != Items.AIR && !arrow(main,true,left,top)){
+		if(main.getItem() != Items.AIR && !arrow(main, true, left, top)){
 			int amount = main.getCount();
 			boolean flag = false;
 			NonNullList<ItemStack> items = inv.items;
@@ -214,7 +232,7 @@ abstract class HookIngameGui {
 			}
 
 		}
-		if(off.getItem() != Items.AIR && !arrow(off,false,left,top)){
+		if(off.getItem() != Items.AIR && !arrow(off, false, left, top)){
 			int amount = off.getCount();
 			boolean flag = false;
 			for(ItemStack t : inv.items){
@@ -232,23 +250,24 @@ abstract class HookIngameGui {
 		RenderSystem.enableBlend();
 
 	}
+
 	private static boolean arrow(ItemStack item, boolean mainHand, int left, int top){
-		if(item.getItem()==Items.BOW || item.getItem() == Items.CROSSBOW){
-			Minecraft mc=Minecraft.getInstance();
-			LocalPlayer player=mc.player;
+		if(item.getItem() == Items.BOW || item.getItem() == Items.CROSSBOW){
+			Minecraft mc = Minecraft.getInstance();
+			LocalPlayer player = mc.player;
 			assert player != null;
-			Inventory inv= player.getInventory();
-			int amount=0;
-			for(ItemStack t: inv.items){
-				if(t.getItem()==Items.ARROW)
-					amount+=t.getCount();
+			Inventory inv = player.getInventory();
+			int amount = 0;
+			for(ItemStack t : inv.items){
+				if(t.getItem() == Items.ARROW)
+					amount += t.getCount();
 			}
-			if(inv.offhand.get(0).getItem()==Items.ARROW)
-				amount+=inv.offhand.get(0).getCount();
+			if(inv.offhand.get(0).getItem() == Items.ARROW)
+				amount += inv.offhand.get(0).getCount();
 			if(mainHand){
 				mc.getItemRenderer().renderAndDecorateItem(Items.ARROW.getDefaultInstance(), left + 182 + 20, top);
 				mc.getItemRenderer().renderGuiItemDecorations(mc.font, Items.ARROW.getDefaultInstance(), left + 182 + 20, top, amount + "");
-			}else {
+			}else{
 				mc.getItemRenderer().renderAndDecorateItem(Items.ARROW.getDefaultInstance(), left - 55, top);
 				mc.getItemRenderer().renderGuiItemDecorations(mc.font, Items.ARROW.getDefaultInstance(), left - 55, top, amount + "");
 			}
@@ -267,13 +286,27 @@ abstract class HookIngameGui {
  */
 @Mixin(Minecraft.class)
 abstract class HookMinecraft implements IMinecraft {
-	@Shadow public LocalPlayer player;
-	@Shadow protected abstract void startUseItem();
-	@Shadow protected int missTime;
-	@Shadow @Final @Mutable private User user;
-	@Shadow protected abstract boolean startAttack();
-	@Shadow protected abstract void pickBlock();
-	@Shadow private int rightClickDelay;
+	@Shadow
+	public LocalPlayer player;
+
+	@Shadow
+	protected abstract void startUseItem();
+
+	@Shadow
+	protected int missTime;
+	@Shadow
+	@Final
+	@Mutable
+	private User user;
+
+	@Shadow
+	protected abstract boolean startAttack();
+
+	@Shadow
+	protected abstract void pickBlock();
+
+	@Shadow
+	private int rightClickDelay;
 
 	@Override
 	public void pick(){
@@ -318,22 +351,23 @@ abstract class HookMinecraft implements IMinecraft {
 	}
 
 	/** remove use delay */
-	@Inject(method = "handleKeybinds",at = @At("HEAD"))
+	@Inject(method = "handleKeybinds", at = @At("HEAD"))
 	private void k(CallbackInfo info){
 		if(Forgetest.removeUseDelay)
-			rightClickDelay=0;
+			rightClickDelay = 0;
 	}
 }
 
 /** remove destroy delay */
 @Mixin(MultiPlayerGameMode.class)
-abstract class HookDestroyDelay{
-	@Shadow private int destroyDelay;
+abstract class HookDestroyDelay {
+	@Shadow
+	private int destroyDelay;
 
-	@Inject(method = "continueDestroyBlock",at = @At("HEAD"))
+	@Inject(method = "continueDestroyBlock", at = @At("HEAD"))
 	private void i(BlockPos p_105284_, Direction p_105285_, CallbackInfoReturnable<Boolean> cir){
 		if(Forgetest.removeDestroyDelay)
-			destroyDelay=0;
+			destroyDelay = 0;
 	}
 }
 
@@ -576,7 +610,7 @@ abstract class HookFluidBlockRenderer {
 abstract class HookChunkRender {
 	//render model arg
 	@fold
-	@ModifyArg(method = "compile", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/BlockRenderDispatcher;renderBatched(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/BlockAndTintGetter;Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;ZLjava/util/Random;Lnet/minecraftforge/client/model/data/IModelData;)Z"), index = 5)
+	@ModifyArg(method = "compile", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/BlockRenderDispatcher;renderBatched(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/BlockAndTintGetter;Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;ZLjava/util/Random;Lnet/minecraftforge/client/model/data/IModelData;)Z",remap = false), index = 5)
 	public boolean renderModel(boolean checkSides){
 		if(Keys.xray)
 			return false;
@@ -594,11 +628,33 @@ abstract class HookWorldRenderer {
 			return true;
 		return playerSpectator;
 	}
+
+	@fold
+	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;getModelViewStack()Lcom/mojang/blaze3d/vertex/PoseStack;", shift = At.Shift.BEFORE))
+	private void line(PoseStack stack,
+					  float partialTicks,
+					  long finishTime,
+					  boolean drawBlockOutline,
+					  Camera camera,
+					  GameRenderer gameRenderer,
+					  LightTexture lightmap,
+					  Matrix4f projection,
+					  CallbackInfo info){
+		Forgetest.shapes.forEach((shape, pos) -> Forgetest.renderShape(stack, shape, pos.x, pos.y, pos.z));
+	}
 }
 
-/**
- * speed doesn't effect fov
- */
+@Mixin(ClientboundCommandsPacket.class)
+abstract class HookCommandPacket {
+	@Inject(method = "handle(Lnet/minecraft/network/protocol/game/ClientGamePacketListener;)V", at = @At("RETURN"))
+	private void handle(ClientGamePacketListener handler, CallbackInfo ci){
+		if(handler instanceof ClientPacketListener listener){
+			SphereCommand.register(listener.getCommands());
+		}
+	}
+}
+
+/** speed doesn't effect fov */
 @Mixin(AbstractClientPlayer.class)
 abstract class HookAbsClientPlayer extends Player {
 	private HookAbsClientPlayer(Level p_i241920_1_, BlockPos p_i241920_2_, float p_i241920_3_, GameProfile p_i241920_4_){
@@ -735,12 +791,12 @@ abstract class HookDebugGui extends GuiComponent {
 
 /** add username to multiplayer screen */
 @Mixin(JoinMultiplayerScreen.class)
-abstract class HookServerListScreen extends Screen{
+abstract class HookServerListScreen extends Screen {
 	private HookServerListScreen(Component p_96550_){
 		super(p_96550_);
 	}
 
-	@Inject(method = "<init>",at = @At("RETURN"))
+	@Inject(method = "<init>", at = @At("RETURN"))
 	private void init(Screen p_99688_, CallbackInfo ci){
 		((MutableComponent)title).append(" (").append(Minecraft.getInstance().getUser().getName()).append(")");
 	}
@@ -748,42 +804,62 @@ abstract class HookServerListScreen extends Screen{
 
 /** increase chat line limit */
 @Mixin(ChatComponent.class)
-abstract class HookChatComponent{
-	@Shadow protected abstract void removeById(int p_93804_);
-	@Shadow public abstract int getWidth();
-	@Shadow public abstract double getScale();
-	@Shadow @Final private Minecraft minecraft;
-	@Shadow protected abstract boolean isChatFocused();
-	@Shadow private int chatScrollbarPos;
-	@Shadow private boolean newMessageSinceScroll;
-	@Shadow public abstract void scrollChat(int p_205361_);
-	@Shadow @Final private List<GuiMessage<FormattedCharSequence>> trimmedMessages;
-	@Shadow @Final private List<GuiMessage<Component>> allMessages;
+abstract class HookChatComponent {
+	@Shadow
+	protected abstract void removeById(int p_93804_);
 
-	@Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V",at = @At("HEAD"),cancellable = true)
+	@Shadow
+	public abstract int getWidth();
+
+	@Shadow
+	public abstract double getScale();
+
+	@Shadow
+	@Final
+	private Minecraft minecraft;
+
+	@Shadow
+	protected abstract boolean isChatFocused();
+
+	@Shadow
+	private int chatScrollbarPos;
+	@Shadow
+	private boolean newMessageSinceScroll;
+
+	@Shadow
+	public abstract void scrollChat(int p_205361_);
+
+	@Shadow
+	@Final
+	private List<GuiMessage<FormattedCharSequence>> trimmedMessages;
+	@Shadow
+	@Final
+	private List<GuiMessage<Component>> allMessages;
+
+	@Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V", at = @At("HEAD"), cancellable = true)
 	private void i(Component content, int hiddenId, int id, boolean exclude, CallbackInfo info){
 		info.cancel();
 
-		if (hiddenId != 0) {
+		if(hiddenId != 0){
 			this.removeById(hiddenId);
 		}
 		int i = Mth.floor((double)this.getWidth() / this.getScale());
 		List<FormattedCharSequence> list = ComponentRenderUtils.wrapComponents(content, i, this.minecraft.font);
 		boolean flag = this.isChatFocused();
-		for(FormattedCharSequence formattedcharsequence : list) {
-			if (flag && this.chatScrollbarPos > 0) {
+		for(FormattedCharSequence formattedcharsequence : list){
+			if(flag && this.chatScrollbarPos > 0){
 				this.newMessageSinceScroll = true;
 				this.scrollChat(1);
 			}
 			this.trimmedMessages.add(0, new GuiMessage<>(id, formattedcharsequence, hiddenId));
 		}
-		while(this.trimmedMessages.size() > 2000) {
+		while(this.trimmedMessages.size() > 2000){
 			this.trimmedMessages.remove(this.trimmedMessages.size() - 1);
 		}
-		if (!exclude) {
+		if(!exclude){
 			this.allMessages.add(0, new GuiMessage<>(id, content, hiddenId));
 
-			while(this.allMessages.size() > 2000) {
+			while(this.allMessages.size() > 2000){
 				this.allMessages.remove(this.allMessages.size() - 1);
 			}
 		}
@@ -792,25 +868,32 @@ abstract class HookChatComponent{
 
 /** remove 2s "loading terrain" */
 @Mixin(ReceivingLevelScreen.class)
-abstract class HookLoadingTerrain extends Screen{
-	@Shadow private boolean oneTickSkipped;
-	@Shadow @Final private long createdAt;
-	@Shadow private boolean loadingPacketsReceived;
-	private HookLoadingTerrain(Component p_96550_){super(p_96550_);}
+abstract class HookLoadingTerrain extends Screen {
+	@Shadow
+	private boolean oneTickSkipped;
+	@Shadow
+	@Final
+	private long createdAt;
+	@Shadow
+	private boolean loadingPacketsReceived;
 
-	@Inject(method = "tick",at = @At("HEAD"),cancellable = true)
+	private HookLoadingTerrain(Component p_96550_){
+		super(p_96550_);
+	}
+
+	@Inject(method = "tick", at = @At("HEAD"), cancellable = true)
 	private void i(CallbackInfo info){
 		info.cancel();
 
 		boolean flag = this.oneTickSkipped || System.currentTimeMillis() > this.createdAt;
-		if (flag && this.minecraft != null && this.minecraft.player != null) {
+		if(flag && this.minecraft != null && this.minecraft.player != null){
 			BlockPos blockpos = this.minecraft.player.blockPosition();
 			boolean flag1 = this.minecraft.level != null && this.minecraft.level.isOutsideBuildHeight(blockpos.getY());
-			if (flag1 || this.minecraft.levelRenderer.isChunkCompiled(blockpos)) {
+			if(flag1 || this.minecraft.levelRenderer.isChunkCompiled(blockpos)){
 				this.onClose();
 			}
 
-			if (this.loadingPacketsReceived) {
+			if(this.loadingPacketsReceived){
 				this.oneTickSkipped = true;
 			}
 

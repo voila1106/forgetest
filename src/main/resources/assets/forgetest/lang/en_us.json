@@ -22,5 +22,6 @@
     "title.forgetest.on": "ON",
     "title.forgetest.off": "OFF",
     "title.forgetest.useDelay": "Remove Use Delay",
-    "title.forgetest.destroyDelay": "Remove Destroy Delay"
+    "title.forgetest.destroyDelay": "Remove Destroy Delay",
+    "msg.forgetest.invalidColor": "Invalid Color"
 }
