@@ -30,7 +30,6 @@ public class Script {
 
 
 	public Script(String[] commands){
-		MinecraftForge.EVENT_BUS.register(this);
 		LocalPlayer player = Minecraft.getInstance().player;
 		for(int i = 0; i < commands.length; i++){
 			String cmd = commands[i];
@@ -127,6 +126,7 @@ public class Script {
 	}
 
 	public Script run(){
+		MinecraftForge.EVENT_BUS.register(this);
 		enabled = true;
 		runDelay(tasks);
 		runDelay(ticks, () -> enabled = false);
@@ -190,6 +190,7 @@ public class Script {
 	public void cancel(){
 		running.clear();
 		enabled = false;
+		MinecraftForge.EVENT_BUS.unregister(this);
 	}
 
 }
