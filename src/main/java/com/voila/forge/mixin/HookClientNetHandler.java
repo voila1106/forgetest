@@ -56,7 +56,6 @@ import java.util.*;
 
 @Mixin(ClientPacketListener.class)
 public abstract class HookClientNetHandler {
-
 }
 
 /**
@@ -356,6 +355,11 @@ abstract class HookMinecraft implements IMinecraft {
 		if(Forgetest.removeUseDelay)
 			rightClickDelay = 0;
 	}
+
+	@Inject(method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V",at = @At("HEAD"))
+	private void clearLevel(Screen p_91321_, CallbackInfo ci){
+		Keys.xray=false;
+	}
 }
 
 /** remove destroy delay */
@@ -370,18 +374,6 @@ abstract class HookDestroyDelay {
 			destroyDelay = 0;
 	}
 }
-
-/*
- * fix score board NPE
- */
-//@Mixin(Scoreboard.class)
-//abstract class HookScoreBoard {
-//	@Inject(method = "removeTeam", at = @At("HEAD"), cancellable = true)
-//	private void i(ScorePlayerTeam playerTeam, CallbackInfo ci){
-//		if(playerTeam == null)
-//			ci.cancel();
-//	}
-//}
 
 @Mixin(SharedConstants.class)
 abstract class HookSharedConstants  // allow all characters
@@ -406,9 +398,7 @@ class HookSoundEngine {
 	}
 }
 
-/**
- * never raining
- */
+/** never raining */
 @Mixin(Biome.class)
 abstract class HookBiome {
 	@Inject(method = "getPrecipitation", at = @At("HEAD"), cancellable = true)
@@ -417,9 +407,7 @@ abstract class HookBiome {
 	}
 }
 
-/**
- * prevent taking frames
- */
+/** prevent taking frames */
 @Mixin(MultiPlayerGameMode.class)
 abstract class HookPlayerController {
 	@SuppressWarnings("all")  // if hasTag() is true, getTag() must not be null
@@ -433,9 +421,7 @@ abstract class HookPlayerController {
 	}
 }
 
-/**
- * check inventory from social screen
- */
+/** check inventory from social screen */
 @Mixin(PlayerEntry.class)
 abstract class HookPlayerEntry {
 
@@ -448,9 +434,7 @@ abstract class HookPlayerEntry {
 			Player player = Minecraft.getInstance().level.getPlayerByUUID(uuid);
 			Forgetest.checkInv(player, false);
 		}
-
 	}
-
 }
 
 @Mixin(LivingEntity.class)
@@ -459,18 +443,14 @@ abstract class HookLivingEntity extends Entity {
 		super(p_i48580_1_, p_i48580_2_);
 	}
 
-	/**
-	 * ignore blindness effect
-	 */
+	/** ignore blindness effect */
 	@Inject(method = "hasEffect", at = @At("HEAD"), cancellable = true)
 	private void i(MobEffect effect, CallbackInfoReturnable<Boolean> info){
 		if(effect == MobEffects.BLINDNESS)
 			info.setReturnValue(false);
 	}
 
-	/**
-	 * always render name tag to display health value (CustomNameVisible)
-	 */
+	/** always render name tag to display health value (CustomNameVisible) */
 	@Inject(method = "shouldShowName", at = @At("HEAD"), cancellable = true)
 	private void t(CallbackInfoReturnable<Boolean> info){
 		LocalPlayer player = Minecraft.getInstance().player;
@@ -482,9 +462,7 @@ abstract class HookLivingEntity extends Entity {
 
 }
 
-/**
- * show health
- */
+/** show health */
 @Mixin(EntityRenderer.class)
 abstract class HookEntityRenderer {
 	@Inject(method = "renderNameTag", at = @At("HEAD"))
@@ -505,9 +483,7 @@ abstract class HookEntityRenderer {
 	}
 }
 
-/**
- * Xray block
- */
+/** Xray block */
 @Mixin(BlockBehaviour.BlockStateBase.class)
 abstract class HookBlockState {
 	@Shadow
@@ -532,9 +508,7 @@ abstract class HookBlockState {
 	}
 }
 
-/**
- * Xray Tile Entity
- */
+/** Xray Tile Entity */
 @Mixin(BlockEntityRenderDispatcher.class)
 abstract class HookTileEntityRenderer {
 	@Shadow
@@ -556,9 +530,7 @@ abstract class HookTileEntityRenderer {
 		}
 	}
 
-	/**
-	 * ignore render distance when xray enabled
-	 */
+	/** ignore render distance when xray enabled */
 	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
 	private <E extends BlockEntity> void t(E tileEntityIn, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, CallbackInfo info){
 		if(Keys.xray){
@@ -575,9 +547,7 @@ abstract class HookTileEntityRenderer {
 	}
 }
 
-/**
- * Xray Fluid
- */
+/** Xray Fluid */
 @Mixin(LiquidBlockRenderer.class)
 abstract class HookFluidBlockRenderer {
 	@Inject(method = "tesselate", at = @At("HEAD"), cancellable = true)
@@ -588,9 +558,7 @@ abstract class HookFluidBlockRenderer {
 		}
 	}
 
-	/**
-	 * render sides
-	 */
+	/** render fluid sides */
 	@Inject(method = "isFaceOccludedByState", at = @At("HEAD"), cancellable = true)
 	private static void d(BlockGetter reader,
 						  Direction direction,
@@ -603,9 +571,7 @@ abstract class HookFluidBlockRenderer {
 	}
 }
 
-/**
- * compatible with OptiFine
- */
+/** compatible with OptiFine */
 @Mixin(targets = "net.minecraft.client.renderer.chunk.ChunkRenderDispatcher$RenderChunk$RebuildTask")
 abstract class HookChunkRender {
 	//render model arg
@@ -629,6 +595,7 @@ abstract class HookWorldRenderer {
 		return playerSpectator;
 	}
 
+	/** render spheres */
 	@fold
 	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;getModelViewStack()Lcom/mojang/blaze3d/vertex/PoseStack;", shift = At.Shift.BEFORE))
 	private void line(PoseStack stack,
