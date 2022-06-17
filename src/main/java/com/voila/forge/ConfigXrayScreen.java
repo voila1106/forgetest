@@ -35,13 +35,13 @@ public class ConfigXrayScreen extends Screen {
 
 	static{
 		for(Block block : Registry.BLOCK){
-			allBlocks.add(block.getRegistryName().toString());
+			allBlocks.add(Registry.BLOCK.getKey(block).toString());
 		}
 		allBlocks.sort(String::compareTo);
 	}
 
 	public ConfigXrayScreen(){
-		super(new TranslatableComponent("title." + Forgetest.ID + ".configXray"));
+		super(Component.translatable("title." + Forgetest.ID + ".configXray"));
 	}
 
 
@@ -49,7 +49,7 @@ public class ConfigXrayScreen extends Screen {
 	protected void init(){
 		int fieldWidth = this.width / 3;
 		addField = new EditBox(font, (width - fieldWidth) / 2, height - 32 - 20 - 5, fieldWidth, 20,
-			new TextComponent("block")) {
+			Component.literal("block")) {
 			@Override
 			public boolean keyPressed(int keyCode, int scanCode, int modifier){
 				if(keyCode == GLFW.GLFW_KEY_ENTER){
@@ -75,7 +75,7 @@ public class ConfigXrayScreen extends Screen {
 		addField.setMaxLength(200);
 		addField.setResponder(content -> sugList.update(content));
 		addButton = new Button(addField.x + addField.getWidth() + 2, addField.y, 30, 20,
-			new TranslatableComponent("title." + Forgetest.ID + ".add"), button ->
+			Component.translatable("title." + Forgetest.ID + ".add"), button ->
 		{
 			String name = addField.getValue();
 			LocalPlayer player = Minecraft.getInstance().player;
@@ -105,36 +105,36 @@ public class ConfigXrayScreen extends Screen {
 
 		});
 		saveButton = new Button((width - 150) / 2, height - 32, 150, 20,
-			new TranslatableComponent("title." + Forgetest.ID + ".save"), (button) ->
+			Component.translatable("title." + Forgetest.ID + ".save"), (button) ->
 			Minecraft.getInstance().setScreen(null));
 		blockList = new BlockList();
 		sugList = new SugList();
-		int buttonWidth= font.width(new TranslatableComponent("title." + Forgetest.ID + ".useDelay").append(": ").append(new TranslatableComponent("title." + Forgetest.ID + ".off")).getVisualOrderText())+10;
+		int buttonWidth= font.width(Component.translatable("title." + Forgetest.ID + ".useDelay").append(": ").append(Component.translatable("title." + Forgetest.ID + ".off")).getVisualOrderText())+10;
 		useButton = new Button(blockList.getRowRight(), 115, buttonWidth, 20,
-			new TranslatableComponent("title." + Forgetest.ID + ".useDelay").append(": ").
+			Component.translatable("title." + Forgetest.ID + ".useDelay").append(": ").
 				append(Forgetest.removeUseDelay ?
-					new TranslatableComponent("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
-					new TranslatableComponent("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)),
+					Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+					Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)),
 			(button) -> {
 				Forgetest.removeUseDelay = !Forgetest.removeUseDelay;
-				useButton.setMessage(new TranslatableComponent("title." + Forgetest.ID + ".useDelay").append(": ").
+				useButton.setMessage(Component.translatable("title." + Forgetest.ID + ".useDelay").append(": ").
 					append(Forgetest.removeUseDelay ?
-						new TranslatableComponent("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
-						new TranslatableComponent("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
+						Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
 				Forgetest.setConfig("removeUseDelay",Forgetest.removeUseDelay+"");
 			});
 		addRenderableWidget(useButton);
 		destroyButton = new Button(blockList.getRowRight(), 90, buttonWidth, 20,
-			new TranslatableComponent("title." + Forgetest.ID + ".destroyDelay").append(": ").
+			Component.translatable("title." + Forgetest.ID + ".destroyDelay").append(": ").
 				append(Forgetest.removeDestroyDelay ?
-					new TranslatableComponent("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
-					new TranslatableComponent("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)),
+					Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+					Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)),
 			(button) -> {
 				Forgetest.removeDestroyDelay = !Forgetest.removeDestroyDelay;
-				destroyButton.setMessage(new TranslatableComponent("title." + Forgetest.ID + ".destroyDelay").append(": ").
+				destroyButton.setMessage(Component.translatable("title." + Forgetest.ID + ".destroyDelay").append(": ").
 					append(Forgetest.removeDestroyDelay ?
-						new TranslatableComponent("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
-						new TranslatableComponent("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
+						Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
 				Forgetest.setConfig("removeDestroyDelay",Forgetest.removeDestroyDelay +"");
 			});
 		addRenderableWidget(destroyButton);
@@ -164,7 +164,7 @@ public class ConfigXrayScreen extends Screen {
 		try{
 			StringBuilder sb = new StringBuilder();
 			for(Block t : Keys.enabledBlocks){
-				sb.append(t.getRegistryName()).append('\n');
+				sb.append(Registry.BLOCK.getKey(t)).append('\n');
 			}
 			FileWriter fw = new FileWriter("config/" + Forgetest.ID + "/xray.txt");
 			fw.write(sb.toString());
@@ -216,8 +216,8 @@ public class ConfigXrayScreen extends Screen {
 	@Override
 	public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks){
 		renderBackground(stack);
-		int w = font.width(new TranslatableComponent("title." + Forgetest.ID + ".configXray"));
-		drawString(stack, font, new TranslatableComponent("title." + Forgetest.ID + ".configXray"),
+		int w = font.width(Component.translatable("title." + Forgetest.ID + ".configXray"));
+		drawString(stack, font, Component.translatable("title." + Forgetest.ID + ".configXray"),
 			(width - w) / 2, 20, 0xffffff);
 		saveButton.render(stack, mouseX, mouseY, partialTicks);
 		blockList.render(stack, mouseX, mouseY, partialTicks);
@@ -331,7 +331,7 @@ public class ConfigXrayScreen extends Screen {
 
 			@Override
 			public Component getNarration(){
-				return TextComponent.EMPTY;
+				return Component.empty();
 			}
 		}
 	}
@@ -391,7 +391,7 @@ public class ConfigXrayScreen extends Screen {
 				Font fontRenderer = ConfigXrayScreen.this.font;
 				GuiComponent.drawString(stack, fontRenderer, block.getName(), left, top + 5, 16777215);
 				if(isMouseOver)
-					renderTooltip(stack, new TextComponent(block.getRegistryName().toString()), mouseX, mouseY);
+					renderTooltip(stack, Component.literal(Registry.BLOCK.getKey(block).toString()), mouseX, mouseY);
 			}
 
 			@Override
@@ -403,7 +403,7 @@ public class ConfigXrayScreen extends Screen {
 			@Override
 			@NotNull
 			public Component getNarration(){
-				return TextComponent.EMPTY;
+				return Component.empty();
 			}
 		}
 

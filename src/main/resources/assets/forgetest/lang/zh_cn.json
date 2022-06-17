@@ -7,6 +7,7 @@
     "key.forgetest.xray": "透视",
     "key.forgetest.configXray": "配置透视",
     "key.forgetest.configScript": "配置脚本",
+    "key.forgetest.zoom": "缩放",
     "title.forgetest.configXray": "透视配置",
     "key.forgetest.script": "切换脚本运行",
     "title.forgetest.save": "完成",
@@ -23,5 +24,6 @@
     "title.forgetest.off": "关",
     "title.forgetest.useDelay": "移除使用延迟",
     "title.forgetest.destroyDelay": "移除破坏延迟",
-    "msg.forgetest.invalidColor": "颜色无效"
+    "msg.forgetest.invalidColor": "颜色无效",
+    "msg.forgetest.invalidPlayer": "玩家无效"
 }

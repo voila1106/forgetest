@@ -40,7 +40,7 @@ public class SphereCommand {
 						else
 							color.setW(1);
 					}catch(Exception e){
-						MutableComponent err = new TranslatableComponent("msg."+Forgetest.ID+".invalidColor").withStyle(ChatFormatting.RED);
+						MutableComponent err = Component.translatable("msg."+Forgetest.ID+".invalidColor").withStyle(ChatFormatting.RED);
 						throw new CommandSyntaxException(new SimpleCommandExceptionType(err), err);
 					}
 					Forgetest.shapes.put(getSphere(DoubleArgumentType.getDouble(arg, "radius"),interval).setColor(color),Vec3Argument.getVec3(arg, "pos"));

@@ -8,6 +8,7 @@
     "key.forgetest.configXray": "config xray",
     "key.forgetest.script": "toggle script",
     "key.forgetest.configScript": "Config Scripts",
+    "key.forgetest.zoom": "Zoom",
     "title.forgetest.configXray": "Xray Config",
     "title.forgetest.save": "Done",
     "title.forgetest.add": "Add",
@@ -23,5 +24,6 @@
     "title.forgetest.off": "OFF",
     "title.forgetest.useDelay": "Remove Use Delay",
     "title.forgetest.destroyDelay": "Remove Destroy Delay",
-    "msg.forgetest.invalidColor": "Invalid Color"
+    "msg.forgetest.invalidColor": "Invalid Color",
+    "msg.forgetest.invalidPlayer": "Invalid Player"
 }

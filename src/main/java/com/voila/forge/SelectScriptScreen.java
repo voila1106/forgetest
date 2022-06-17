@@ -13,14 +13,14 @@ public class SelectScriptScreen extends Screen {
 	Button doneButton;
 
 	public SelectScriptScreen(){
-		super(new TranslatableComponent("title." + Forgetest.ID + ".selectScript"));
+		super(Component.translatable("title." + Forgetest.ID + ".selectScript"));
 	}
 
 	@Override
 	protected void init(){
 		super.init();
 		doneButton = new Button((width - 150) / 2, height - 32, 150, 20,
-			new TranslatableComponent("title." + Forgetest.ID + ".save"), (button) ->
+			Component.translatable("title." + Forgetest.ID + ".save"), (button) ->
 			Minecraft.getInstance().setScreen(null));
 		list = new ScriptList();
 
@@ -86,7 +86,7 @@ public class SelectScriptScreen extends Screen {
 
 			@Override
 			public Component getNarration(){
-				return TextComponent.EMPTY;
+				return Component.empty();
 			}
 		}
 

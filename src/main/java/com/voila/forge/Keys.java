@@ -22,9 +22,12 @@ public class Keys {
 	public static KeyMapping configXrayKey;
 	public static KeyMapping scriptKey;
 	public static KeyMapping configScriptKey;
+	public static KeyMapping zoomKey;
 
 
 	public static boolean xray = false;
+	public static boolean scoping=false;
+	public static float scopingScale=0.15f;
 	public static Set<Block> enabledBlocks = new HashSet<>();
 	public static Script runningScript;
 
@@ -39,6 +42,7 @@ public class Keys {
 		configXrayKey = register("key." + Forgetest.ID + ".configXray", GLFW.GLFW_KEY_H, "key.categories.misc");
 		scriptKey = register("key." + Forgetest.ID + ".script", GLFW.GLFW_KEY_Y, "key.categories.misc");
 		configScriptKey = register("key." + Forgetest.ID + ".configScript", GLFW.GLFW_KEY_K, "key.categories.misc");
+		zoomKey=register("key."+Forgetest.ID+".zoom",GLFW.GLFW_KEY_C,"key.categories.misc");
 
 		new File("config/" + Forgetest.ID).mkdirs();
 	}
@@ -65,7 +69,7 @@ public class Keys {
 			ability.mayfly = !ability.mayfly;
 		}
 		if(lightKey.consumeClick()){
-			Minecraft.getInstance().options.gamma = Minecraft.getInstance().options.gamma > 0.5 ? 0.5 : 30;
+			Minecraft.getInstance().options.gamma().set(Minecraft.getInstance().options.gamma().get() > 1 ? 1d : 30d);
 		}
 		if(xrayKey.consumeClick()){
 			toggleXray();
@@ -82,8 +86,8 @@ public class Keys {
 		if(configScriptKey.consumeClick()){
 			Minecraft.getInstance().setScreen(new SelectScriptScreen());
 		}
-
-
+		if(event.getKey() == zoomKey.getKey().getValue() && Minecraft.getInstance().screen==null)
+			scoping = event.getAction() != 0;
 	}
 
 	private static void toggleXray(){
@@ -92,7 +96,6 @@ public class Keys {
 		}
 		Minecraft.getInstance().levelRenderer.allChanged();
 		xray = !xray;
-
 	}
 
 	private static void toggleScript(){
@@ -116,8 +119,6 @@ public class Keys {
 			e.printStackTrace();
 			Forgetest.sendMessage(ChatFormatting.RED + e.getMessage());
 		}
-
-
 	}
 
 }

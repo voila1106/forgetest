@@ -85,7 +85,7 @@ public class DamageParticle extends TextureSheetParticle {
 
 		@Override
 		public String writeToString(){
-			return String.format("%s %d", this.getType().getRegistryName(), this.amount);
+			return String.format("%s %d", this.getType().toString(), this.amount);
 		}
 
 		@Override

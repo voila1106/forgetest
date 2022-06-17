@@ -6,6 +6,7 @@ import net.minecraft.*;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.*;
+import net.minecraft.core.*;
 import net.minecraft.network.chat.*;
 import net.minecraft.world.entity.player.*;
 
@@ -21,7 +22,7 @@ public class SwitchAccountScreen extends Screen {
 	private EditBox tokenField;
 
 	public SwitchAccountScreen(Screen parent){
-		super(new TranslatableComponent("menu." + Forgetest.ID + ".switchAccount"));
+		super(Component.translatable("menu." + Forgetest.ID + ".switchAccount"));
 		this.parent = parent;
 		if(origSession == null){
 			origSession = ((IMinecraft)Minecraft.getInstance()).getSession();
@@ -33,22 +34,22 @@ public class SwitchAccountScreen extends Screen {
 		super.init();
 		final int fieldWidth = width / 3;
 		final int buttonWidth = fieldWidth / 2;
-		usernameField = new EditBox(font, (width - fieldWidth) / 2, 60, fieldWidth, 20, TextComponent.EMPTY);
+		usernameField = new EditBox(font, (width - fieldWidth) / 2, 60, fieldWidth, 20, Component.empty());
 		addWidget(usernameField);
-		uuidField = new EditBox(font, (width - fieldWidth) / 2, 100, fieldWidth, 20, TextComponent.EMPTY);
+		uuidField = new EditBox(font, (width - fieldWidth) / 2, 100, fieldWidth, 20, Component.empty());
 		addWidget(uuidField);
-		tokenField = new EditBox(font, (width - fieldWidth) / 2, 140, fieldWidth, 20, TextComponent.EMPTY);
+		tokenField = new EditBox(font, (width - fieldWidth) / 2, 140, fieldWidth, 20, Component.empty());
 		tokenField.setMaxLength(1024);
 		addWidget(tokenField);
 
 		addRenderableWidget(new Button((width - buttonWidth) / 2, 168, fieldWidth / 2, 20,
-			new TranslatableComponent("title." + Forgetest.ID + ".switch"), button ->
+			Component.translatable("title." + Forgetest.ID + ".switch"), button ->
 		{
 			try{
 				String username = usernameField.getValue();
 				String uuid;
 				if(uuidField.getValue().isEmpty())
-					uuid = Player.createPlayerUUID(username).toString();
+					uuid = UUIDUtil.createOfflinePlayerUUID(username).toString();
 				else
 					uuid = UUIDTypeAdapter.fromString(uuidField.getValue()).toString();
 				String token = tokenField.getValue();
@@ -63,7 +64,7 @@ public class SwitchAccountScreen extends Screen {
 		}));
 
 		addRenderableWidget(new Button((width - buttonWidth) / 2, 192, fieldWidth / 2, 20,
-			new TranslatableComponent("title." + Forgetest.ID + ".restore"), button ->
+			Component.translatable("title." + Forgetest.ID + ".restore"), button ->
 		{
 			try{
 				((IMinecraft)Minecraft.getInstance()).setSession(origSession);
@@ -75,7 +76,7 @@ public class SwitchAccountScreen extends Screen {
 		}));
 
 		addRenderableWidget(new Button((width - buttonWidth) / 2, height - 32, fieldWidth / 2, 20,
-			new TranslatableComponent("title." + Forgetest.ID + ".save"), button ->
+			Component.translatable("title." + Forgetest.ID + ".save"), button ->
 			Minecraft.getInstance().setScreen(parent)));
 	}
 
@@ -92,18 +93,18 @@ public class SwitchAccountScreen extends Screen {
 		}
 
 		font.draw(matrixStack, title, (width - font.width(title)) / 2.0f, 15, 0xffffff);
-		font.draw(matrixStack, new TranslatableComponent("title." + Forgetest.ID + ".username"),
+		font.draw(matrixStack, Component.translatable("title." + Forgetest.ID + ".username"),
 			usernameField.x, usernameField.y - 12, 0xffffff);
-		font.draw(matrixStack, new TranslatableComponent("title." + Forgetest.ID + ".uuid"),
+		font.draw(matrixStack, Component.translatable("title." + Forgetest.ID + ".uuid"),
 			uuidField.x, uuidField.y - 12, 0xffffff);
-		font.draw(matrixStack, new TranslatableComponent("title." + Forgetest.ID + ".token"),
+		font.draw(matrixStack, Component.translatable("title." + Forgetest.ID + ".token"),
 			tokenField.x, tokenField.y - 12, 0xffffff);
 
 		User user = Minecraft.getInstance().getUser();
-		font.draw(matrixStack, new TranslatableComponent("title." + Forgetest.ID + ".current")
+		font.draw(matrixStack, Component.translatable("title." + Forgetest.ID + ".current")
 				.append(user.getName() + "  UUID: " + user.getUuid()),
 			tokenField.x, 250, 0xffffff);
-		font.draw(matrixStack, new TextComponent(ChatFormatting.RED + error),
+		font.draw(matrixStack, Component.literal(ChatFormatting.RED + error),
 			tokenField.x, 270, 0xffffff);
 
 	}

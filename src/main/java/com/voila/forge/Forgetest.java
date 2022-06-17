@@ -2,8 +2,6 @@ package com.voila.forge;
 
 import com.mojang.blaze3d.systems.*;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.*;
-import net.minecraft.Util;
 import net.minecraft.*;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.screens.*;
@@ -17,9 +15,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.block.*;
 import net.minecraft.world.phys.*;
-import net.minecraft.world.phys.shapes.*;
 import net.minecraftforge.api.distmarker.*;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.common.*;
@@ -43,7 +39,6 @@ public class Forgetest {
 	public static String ID = "forgetest";
 	private static Map<Integer, List<Runnable>> delayedTask = new HashMap<>();
 
-	// Directly reference a log4j logger.
 	private static final Logger LOGGER = LogManager.getLogger();
 
 	public static String last;
@@ -60,17 +55,9 @@ public class Forgetest {
 
 		TestItem.registry(eventBus);
 
-		eventBus.addListener(this::setup);
-		// Register the enqueueIMC method for modloading
 		eventBus.addListener(this::enqueueIMC);
-		// Register the processIMC method for modloading
 		eventBus.addListener(this::processIMC);
-		// Register the doClientStuff method for modloading
 		eventBus.addListener(this::doClientStuff);
-
-		//eventBus.addListener(this::onHurt);
-
-		// Register ourselves for server and other game events we are interested in
 		MinecraftForge.EVENT_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(Keys.class);
 
@@ -78,11 +65,6 @@ public class Forgetest {
 		removeDestroyDelay = Boolean.parseBoolean(getConfig("removeDestroyDelay"));
 	}
 
-	private void setup(final FMLCommonSetupEvent event){
-		// some preinit code
-		LOGGER.info("HELLO FROM PREINIT");
-		LOGGER.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
-	}
 
 	private void doClientStuff(final FMLClientSetupEvent event){
 		Keys.init();
@@ -102,16 +84,6 @@ public class Forgetest {
 		LOGGER.info("Got IMC {}", event.getIMCStream().
 			map(m -> m.getMessageSupplier().get()).
 			collect(Collectors.toList()));
-	}
-
-
-	@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
-	public static class RegistryEvents {
-		@SubscribeEvent
-		public static void onBlocksRegistry(final RegistryEvent.Register<Block> blockRegistryEvent){
-			// register a new block here
-			LOGGER.info("HELLO from Register Block");
-		}
 	}
 
 	@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -140,7 +112,7 @@ public class Forgetest {
 	public static void checkInv(Entity target, boolean fromEvent){
 		LocalPlayer me = Minecraft.getInstance().player;
 		if(me == null || !(target instanceof Player player)){
-			sendMessage(ChatFormatting.RED + "玩家无效");
+			sendMessage(Component.translatable("msg."+ID+".invalidPlayer").withStyle(ChatFormatting.RED));
 			return;
 		}
 		if(fromEvent && !me.isCrouching()){
@@ -149,7 +121,7 @@ public class Forgetest {
 		Inventory inv = player.getInventory();
 		MenuScreens.create(MenuType.GENERIC_9x5, Minecraft.getInstance(), "spy".hashCode(), player.getName());
 		AbstractContainerMenu container = me.containerMenu;
-		ItemStack frame = Items.GRAY_STAINED_GLASS_PANE.getDefaultInstance().setHoverName(TextComponent.EMPTY);
+		ItemStack frame = Items.GRAY_STAINED_GLASS_PANE.getDefaultInstance().setHoverName(Component.empty());
 		frame.getOrCreateTag().put("isFrame", ByteTag.valueOf(true));
 		NonNullList<Slot> slots = container.slots;
 		for(int i = 0; i < 45; i++){
@@ -191,11 +163,11 @@ public class Forgetest {
 	}
 
 	public static void sendMessage(String msg){
-		Minecraft.getInstance().gui.handleChat(ChatType.SYSTEM, new TextComponent(msg), Util.NIL_UUID);
+		Minecraft.getInstance().gui.getChat().addMessage(Component.literal(msg));
 	}
 
 	public static void sendMessage(Component msg){
-		Minecraft.getInstance().gui.handleChat(ChatType.SYSTEM, msg, Util.NIL_UUID);
+		Minecraft.getInstance().gui.getChat().addMessage(msg);
 	}
 
 	@OnlyIn(Dist.CLIENT)
@@ -297,12 +269,6 @@ public class Forgetest {
 		}
 	}
 
-	@SubscribeEvent
-	public void onRenderWorld(RenderLevelLastEvent event){
-		//renderShape(event.getPoseStack(), shape,0,100,0,1,1,1,1);
-
-	}
-
 	public static void renderShape(PoseStack stack, Shape shape, double x, double y, double z){
 		RenderSystem.enableDepthTest();
 		RenderSystem.setShader(GameRenderer::getPositionColorShader);
@@ -330,6 +296,15 @@ public class Forgetest {
 		});
 		RenderSystem.enableBlend();
 		RenderSystem.enableTexture();
+	}
+
+	@SubscribeEvent
+	public void onScroll(InputEvent.MouseScrollEvent event){
+		if(Minecraft.getInstance().player.isScoping()){
+			Keys.scopingScale= (float)Mth.clamp(Keys.scopingScale-event.getScrollDelta()*0.05,0.05,1.2);
+			//System.out.println("scale: "+Keys.scopingScale+" fovModifier: "+Minecraft.getInstance().player.getFieldOfViewModifier());
+			event.setCanceled(true);
+		}
 	}
 
 }
