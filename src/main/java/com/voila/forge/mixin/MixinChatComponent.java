@@ -62,7 +62,7 @@ public abstract class MixinChatComponent {
 			str.contains("密码") &&
 			str.toLowerCase().contains("/l")){
 			assert Minecraft.getInstance().player != null;
-			Minecraft.getInstance().player.chat("/login 111111");
+			Minecraft.getInstance().player.command("login 111111");
 		}
 		Forgetest.last = str;
 

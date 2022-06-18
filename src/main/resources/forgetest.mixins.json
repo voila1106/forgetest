@@ -11,6 +11,7 @@
         "MixinAbsClientPlayer",
         "MixinBiome",
         "MixinBlockState",
+        "MixinChatComponent",
         "MixinChunkRender",
         "MixinCommandPacket",
         "MixinDebugOverlay",
