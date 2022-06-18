@@ -6,6 +6,7 @@ import net.minecraft.client.*;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.player.*;
 import net.minecraft.core.*;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.item.*;
 import org.spongepowered.asm.mixin.*;
@@ -15,12 +16,8 @@ import org.spongepowered.asm.mixin.injection.callback.*;
 /** show item total amount */
 @Mixin(Gui.class)
 public abstract class MixinGui {
-	@Shadow
-	protected int screenWidth;
-
-	@Shadow
-	protected int screenHeight;
-
+	@Shadow protected int screenWidth;
+	@Shadow protected int screenHeight;
 
 	@Inject(method = "renderHotbar", at = @At("HEAD"))
 	private void h(float partialTicks, PoseStack stack, CallbackInfo info){
@@ -100,8 +97,15 @@ public abstract class MixinGui {
 		return false;
 	}
 
+	/** no scope overlay */
 	@Inject(method = "renderSpyglassOverlay",at = @At("HEAD"), cancellable = true)
 	private void spyglassOverlay(float p_168676_, CallbackInfo info){
+		info.cancel();
+	}
+
+	/** no vignette */
+	@Inject(method = "renderVignette",at = @At("HEAD"),cancellable = true)
+	private void vignette(Entity p_93068_, CallbackInfo info){
 		info.cancel();
 	}
 
