@@ -25,7 +25,7 @@ abstract class MixinLocalPlayer extends AbstractClientPlayer {
 	}
 
 	@Inject(method = "command(Ljava/lang/String;Lnet/minecraft/network/chat/Component;)V", at = @At("HEAD"), cancellable = true)
-	private void chat(String message, Component p_234150_, CallbackInfo info){
+	private void command(String message, Component p_234150_, CallbackInfo info){
 		if(message.startsWith("sphere ") || message.startsWith("check ")){
 			info.cancel();
 			ClientPacketListener connection = Minecraft.getInstance().getConnection();
