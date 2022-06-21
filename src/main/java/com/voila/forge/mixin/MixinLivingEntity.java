@@ -20,7 +20,7 @@ public abstract class MixinLivingEntity extends Entity {
 	/** ignore blindness effect */
 	@Inject(method = "hasEffect", at = @At("HEAD"), cancellable = true)
 	private void i(MobEffect effect, CallbackInfoReturnable<Boolean> info){
-		if(effect == MobEffects.BLINDNESS)
+		if(effect == MobEffects.BLINDNESS || effect == MobEffects.DARKNESS)
 			info.setReturnValue(false);
 	}
 
