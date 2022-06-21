@@ -2,6 +2,7 @@ package com.voila.forge.mixin;
 
 import com.mojang.blaze3d.systems.*;
 import com.mojang.blaze3d.vertex.*;
+import com.voila.forge.*;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.player.*;
@@ -9,6 +10,7 @@ import net.minecraft.core.*;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.item.*;
+import net.minecraft.world.phys.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
@@ -107,6 +109,13 @@ public abstract class MixinGui {
 	@Inject(method = "renderVignette",at = @At("HEAD"),cancellable = true)
 	private void vignette(Entity p_93068_, CallbackInfo info){
 		info.cancel();
+	}
+
+	@Inject(method = "canRenderCrosshairForSpectator",at = @At("RETURN"),cancellable = true)
+	private void canRenderSpectatorCross(HitResult p_93025_, CallbackInfoReturnable<Boolean> info){
+		if(Keys.xray){
+			info.setReturnValue(true);
+		}
 	}
 
 }
