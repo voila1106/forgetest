@@ -1,3 +1,5 @@
+package com.voila.forge.mixin;
+
 import com.mojang.blaze3d.platform.*;
 import com.voila.forge.*;
 import net.minecraft.client.*;
@@ -6,24 +8,24 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
 /** script press key */
-@SuppressWarnings("all")
 @Mixin(KeyMapping.class)
 public abstract class MixinKeyMapping {
+	private final KeyMapping _this=(KeyMapping)(Object)this;
+
 	@Inject(method = "isDown", at = @At("HEAD"), cancellable = true)
 	private void i(CallbackInfoReturnable<Boolean> info){
 		if(!Script.enabled){
 			return;
 		}
-		Object key = this;
 		Options settings = Minecraft.getInstance().options;
-		if(Keys.runningScript.forward && key == settings.keyUp ||
-			Keys.runningScript.backward && key == settings.keyDown ||
-			Keys.runningScript.left && key == settings.keyLeft ||
-			Keys.runningScript.right && key == settings.keyRight ||
-			Keys.runningScript.jump && key == settings.keyJump ||
-			Keys.runningScript.crouch && key == settings.keyShift ||
-			Keys.runningScript.use && key == settings.keyUse ||
-			Keys.runningScript.attack && key == settings.keyAttack){
+		if(Keys.runningScript.forward && _this == settings.keyUp ||
+			Keys.runningScript.backward && _this == settings.keyDown ||
+			Keys.runningScript.left && _this == settings.keyLeft ||
+			Keys.runningScript.right && _this == settings.keyRight ||
+			Keys.runningScript.jump && _this == settings.keyJump ||
+			Keys.runningScript.crouch && _this == settings.keyShift ||
+			Keys.runningScript.use && _this == settings.keyUse ||
+			Keys.runningScript.attack && _this == settings.keyAttack){
 			info.setReturnValue(true);
 		}
 	}
