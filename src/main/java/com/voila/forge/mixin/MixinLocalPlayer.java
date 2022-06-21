@@ -20,6 +20,8 @@ import org.spongepowered.asm.mixin.injection.callback.*;
  *  <p>spawn spheres</p> */
 @Mixin(LocalPlayer.class)
 abstract class MixinLocalPlayer extends AbstractClientPlayer {
+	private final LocalPlayer _this=(LocalPlayer)((Object)this);
+
 	private MixinLocalPlayer(ClientLevel p_234112_, GameProfile p_234113_, @Nullable ProfilePublicKey p_234114_){
 		super(p_234112_, p_234113_, p_234114_);
 	}
@@ -44,4 +46,12 @@ abstract class MixinLocalPlayer extends AbstractClientPlayer {
 			}
 		}
 	}
+
+	@Inject(method = "isShiftKeyDown",at = @At("HEAD"),cancellable = true)
+	private void isShiftKeyDown(CallbackInfoReturnable<Boolean> info){
+		if(_this == Minecraft.getInstance().player && Script.enabled && Keys.runningScript != null && Keys.runningScript.crouch){
+			info.setReturnValue(true);
+		}
+	}
+
 }

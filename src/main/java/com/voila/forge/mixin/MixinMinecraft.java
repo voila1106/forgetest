@@ -8,6 +8,8 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
+import javax.annotation.*;
+
 @Mixin(Minecraft.class)
 public abstract class MixinMinecraft implements IMinecraft {
 	@Shadow public LocalPlayer player;
@@ -23,6 +25,8 @@ public abstract class MixinMinecraft implements IMinecraft {
 
 	@Shadow
 	protected abstract void pickBlock();
+
+	@Shadow @Nullable public Screen screen;
 
 	@Override
 	public void pick(){
@@ -73,10 +77,26 @@ public abstract class MixinMinecraft implements IMinecraft {
 			rightClickDelay = 0;
 	}
 
+	@ModifyArg(method = "handleKeybinds",at = @At(value = "INVOKE",target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"),index = 0)
+	private boolean continueAttackArg(boolean p_91387_){
+		if(Script.enabled){
+			missTime=0;
+			return true;
+		}
+		return p_91387_;
+	}
+
 	/** fix render error */
 	@Inject(method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V", at = @At("HEAD"))
 	private void clearLevel(Screen p_91321_, CallbackInfo ci){
 		Keys.xray = false;
 		Keys.scoping=false;
+	}
+
+	@Inject(method = "tick",at = @At("HEAD"))
+	private void tick(CallbackInfo info){
+		if(Script.enabled && screen!=null){
+			screen.passEvents=true;
+		}
 	}
 }

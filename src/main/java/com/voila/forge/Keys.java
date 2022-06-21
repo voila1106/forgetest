@@ -10,6 +10,7 @@ import net.minecraftforge.client.event.*;
 import net.minecraftforge.eventbus.api.*;
 import org.lwjgl.glfw.*;
 
+import javax.annotation.*;
 import java.io.*;
 import java.util.*;
 
@@ -29,6 +30,7 @@ public class Keys {
 	public static boolean scoping=false;
 	public static float scopingScale=0.15f;
 	public static Set<Block> enabledBlocks = new HashSet<>();
+	@Nullable
 	public static Script runningScript;
 
 //	private static final Logger LOGGER = LogManager.getLogger();
