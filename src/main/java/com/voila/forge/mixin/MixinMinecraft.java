@@ -79,7 +79,7 @@ public abstract class MixinMinecraft implements IMinecraft {
 
 	@ModifyArg(method = "handleKeybinds",at = @At(value = "INVOKE",target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"),index = 0)
 	private boolean continueAttackArg(boolean p_91387_){
-		if(Script.enabled){
+		if(Script.enabled && Keys.runningScript.attack){
 			missTime=0;
 			return true;
 		}
