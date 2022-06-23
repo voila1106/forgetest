@@ -63,6 +63,8 @@ public abstract class MixinMinecraft implements IMinecraft {
 			player.respawn();
 			info.cancel();
 		}
+
+		Keys.scoping=false;
 	}
 
 	@Inject(method = "startAttack", at = @At("HEAD"))
