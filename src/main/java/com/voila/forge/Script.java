@@ -20,16 +20,17 @@ public class Script {
 	public boolean use;
 	public boolean attack;
 
-	private final Map<Integer, List<Runnable>> tasks = new HashMap<>();
-	private Map<Integer, List<Runnable>> running = new HashMap<>();
-	private int ticks = 1;
-	public int waitTicks = 0;
+	private final Map<Long, List<Runnable>> tasks = new HashMap<>();
+	private Map<Long, List<Runnable>> running = new HashMap<>();
+	private long ticks = 1;
+	public long waitTicks = 0;
+	private boolean loop = false;
 
 	public static boolean enabled = false;
 	public static String filename = "script.txt";
 
 
-	public Script(String[] commands){
+	public Script(String[] commands) throws ScriptSyntaxException{
 		LocalPlayer player = Minecraft.getInstance().player;
 		for(int i = 0; i < commands.length; i++){
 			String cmd = commands[i];
@@ -114,13 +115,16 @@ public class Script {
 							put(ticks, () -> player.setXRot(Float.parseFloat(cmd.substring(6))));
 						}else if(cmd.startsWith("yaw")){
 							put(ticks, () -> player.setYRot(Float.parseFloat(cmd.substring(4))));
-						}else if(!cmd.trim().isEmpty() && !cmd.startsWith("#") && !cmd.startsWith("\t")){
+						}else if(!cmd.trim().isEmpty() && !cmd.startsWith("#") && !cmd.startsWith("\t") && !cmd.equals("loop")){
 							Forgetest.sendMessage(ChatFormatting.GOLD + "Warning: Cannot resolve line " + (i + 1) + ": " + cmd);
 						}
 					}catch(Exception e){
-						throw new RuntimeException("Syntax error in line " + (i + 1));
+						throw new ScriptSyntaxException("Syntax error in line " + (i + 1));
 					}
 			}
+		}
+		if(commands[commands.length - 1].equals("loop")){
+			loop = true;
 		}
 
 	}
@@ -129,11 +133,12 @@ public class Script {
 		MinecraftForge.EVENT_BUS.register(this);
 		enabled = true;
 		runDelay(tasks);
-		runDelay(ticks, () -> enabled = false);
+		if(!loop)
+			runDelay(ticks, this::cancel);
 		return this;
 	}
 
-	private void put(int ticks, Runnable task){
+	private void put(long ticks, Runnable task){
 		if(tasks.get(ticks) == null){
 			ArrayList<Runnable> list = new ArrayList<>();
 			list.add(task);
@@ -143,7 +148,7 @@ public class Script {
 		}
 	}
 
-	private void runDelay(int ticks, Runnable task){
+	private void runDelay(long ticks, Runnable task){
 		if(running.get(ticks) == null){
 			ArrayList<Runnable> list = new ArrayList<>();
 			list.add(task);
@@ -153,7 +158,7 @@ public class Script {
 		}
 	}
 
-	private void runDelay(Map<Integer, List<Runnable>> task){
+	private void runDelay(Map<Long, List<Runnable>> task){
 		running.putAll(task);
 	}
 
@@ -169,8 +174,10 @@ public class Script {
 			cancel();
 			return;
 		}
-		Map<Integer, List<Runnable>> map = new HashMap<>();
-		for(int i : running.keySet()){
+
+		//TODO: optimize performance
+		Map<Long, List<Runnable>> map = new HashMap<>();
+		for(long i : running.keySet()){
 			if(i <= 0){
 				running.get(i).forEach(runnable -> {
 					try{
@@ -184,6 +191,9 @@ public class Script {
 			}
 		}
 		running = map;
+		if(running.size() == 0 && loop){
+			running.putAll(tasks);
+		}
 		waitTicks++;
 	}
 
@@ -191,6 +201,10 @@ public class Script {
 		running.clear();
 		enabled = false;
 		MinecraftForge.EVENT_BUS.unregister(this);
+	}
+
+	public String getProgress(){
+		return (tasks.size() - running.size()) + "/" + tasks.size();
 	}
 
 }

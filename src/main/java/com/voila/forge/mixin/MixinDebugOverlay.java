@@ -18,6 +18,7 @@ public abstract class MixinDebugOverlay extends GuiComponent {
 			List<String> list = info.getReturnValue();
 			String str = "Script waitTicks: " + Keys.runningScript.waitTicks;
 			list.add(str);
+			list.add("Script progress: "+Keys.runningScript.getProgress());
 			info.setReturnValue(list);
 		}
 	}
