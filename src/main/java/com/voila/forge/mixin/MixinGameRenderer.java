@@ -22,6 +22,7 @@ public abstract class MixinGameRenderer {
 	}
 
 	/** remove fov range check */
+	@Rewrite
 	@Inject(method = "tickFov",at = @At("HEAD"),cancellable = true)
 	private void tickFov(CallbackInfo info){
 		info.cancel();

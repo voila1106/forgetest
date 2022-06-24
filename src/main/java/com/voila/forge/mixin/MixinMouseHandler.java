@@ -21,6 +21,8 @@ public abstract class MixinMouseHandler {
 	@Shadow
 	public abstract boolean isMouseGrabbed();
 
+	/** adjust mouse speed with scoping scale */
+	@Rewrite
 	@Inject(method = "turnPlayer", at = @At("HEAD"), cancellable = true)
 	private void turnPlayer(CallbackInfo info){
 		info.cancel();

@@ -20,6 +20,7 @@ public abstract class MixinAbsClientPlayer extends Player {
 		super(p_219727_, p_219728_, p_219729_, p_219730_, p_219731_);
 	}
 
+	@Rewrite
 	@Inject(method = "getFieldOfViewModifier", at = @At("HEAD"), cancellable = true)
 	private void fov(CallbackInfoReturnable<Float> info){
 		float f = 1.0F;

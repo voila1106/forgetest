@@ -1,5 +1,6 @@
 package com.voila.forge.mixin;
 
+import com.voila.forge.*;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.core.*;
 import net.minecraft.network.chat.*;
@@ -18,6 +19,7 @@ public abstract class MixinLoadingTerrain extends Screen {
 		super(p_96550_);
 	}
 
+	@Rewrite
 	@Inject(method = "tick", at = @At("HEAD"), cancellable = true)
 	private void i(CallbackInfo info){
 		info.cancel();

@@ -1,5 +1,6 @@
 package com.voila.forge;
 
+import com.google.common.reflect.*;
 import com.mojang.blaze3d.systems.*;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.*;
@@ -30,6 +31,9 @@ import org.apache.logging.log4j.*;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
+import java.lang.annotation.*;
+import java.lang.reflect.*;
+import java.nio.file.*;
 import java.util.*;
 import java.util.stream.*;
 
@@ -63,6 +67,40 @@ public class Forgetest {
 
 		removeUseDelay = Boolean.parseBoolean(getConfig("removeUseDelay"));
 		removeDestroyDelay = Boolean.parseBoolean(getConfig("removeDestroyDelay"));
+
+		StringBuilder sb=new StringBuilder("Re-written methods: ").append('\n');
+		try{
+			Set<Class<?>> mixinClasses = findAllClasses(getClass().getPackageName()+".mixin");
+			for(Class<?> clazz:mixinClasses){
+				for(Method m:clazz.getDeclaredMethods()){
+					ms:
+					for(Annotation a:m.getAnnotations()){
+						for(Class<?> c:a.getClass().getInterfaces()){
+							if(c.getName().equals(getClass().getPackageName()+".Rewrite")){
+								sb.append(m).append('\n');
+								break ms;
+							}
+						}
+
+
+					}
+				}
+			}
+			Files.write(new File("config/"+ID+"/rewrite.txt").toPath(),sb.toString().getBytes());
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+
+	}
+
+	public Set<Class<?>> findAllClasses(String packageName) throws IOException {
+		return ClassPath.from(ClassLoader.getSystemClassLoader())
+			.getAllClasses()
+			.stream()
+			.filter(clazz -> clazz.getPackageName()
+				.equalsIgnoreCase(packageName))
+			.map(ClassPath.ClassInfo::load)
+			.collect(Collectors.toSet());
 	}
 
 

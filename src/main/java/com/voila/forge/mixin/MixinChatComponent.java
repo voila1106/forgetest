@@ -49,6 +49,7 @@ public abstract class MixinChatComponent {
 	@Final
 	private List<GuiMessage<Component>> allMessages;
 
+	@Rewrite
 	@Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V", at = @At("HEAD"), cancellable = true)
 	private void i(Component content, int hiddenId, int id, boolean exclude, CallbackInfo info){
 		info.cancel();
