@@ -15,6 +15,7 @@
         "MixinChunkRender",
         "MixinCommandPacket",
         "MixinDebugOverlay",
+        "MixinDisconnectedScreen",
         "MixinEffectName",
         "MixinEnchantment",
         "MixinEntityRenderer",
