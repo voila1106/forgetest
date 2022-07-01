@@ -2,15 +2,18 @@ package com.voila.forge.mixin;
 
 import com.mojang.blaze3d.systems.*;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.logging.*;
 import com.voila.forge.*;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.player.*;
 import net.minecraft.core.*;
+import net.minecraft.network.chat.*;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.item.*;
 import net.minecraft.world.phys.*;
+import org.slf4j.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
@@ -20,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.*;
 public abstract class MixinGui {
 	@Shadow protected int screenWidth;
 	@Shadow protected int screenHeight;
+	private final Logger LOGGER= LogUtils.getLogger();
 
 	@Inject(method = "renderHotbar", at = @At("HEAD"))
 	private void h(float partialTicks, PoseStack stack, CallbackInfo info){
@@ -111,11 +115,28 @@ public abstract class MixinGui {
 		info.cancel();
 	}
 
+	/** always render cross when xray */
 	@Inject(method = "canRenderCrosshairForSpectator",at = @At("RETURN"),cancellable = true)
 	private void canRenderSpectatorCross(HitResult p_93025_, CallbackInfoReturnable<Boolean> info){
 		if(Keys.xray){
 			info.setReturnValue(true);
 		}
+	}
+
+	/** log when show title */
+	@Inject(method = "setTitle",at = @At("RETURN"))
+	private void setTitle(Component component, CallbackInfo ci){
+		LOGGER.info("[Title] "+component.getString());
+	}
+
+	@Inject(method = "setSubtitle",at = @At("RETURN"))
+	private void setSubTitle(Component component, CallbackInfo ci){
+		LOGGER.info("[SubTitle] "+component.getString());
+	}
+
+	@Inject(method = "setOverlayMessage",at = @At("RETURN"))
+	private void setOverlayMessage(Component component, boolean p_93065_, CallbackInfo ci){
+		LOGGER.info("[OverlayMsg] "+component.getString());
 	}
 
 }
