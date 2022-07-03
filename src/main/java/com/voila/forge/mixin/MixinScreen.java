@@ -24,8 +24,8 @@ public abstract class MixinScreen extends AbstractContainerEventHandler implemen
 	@Shadow public int width;
 	@Shadow public int height;
 	@Shadow protected ItemRenderer itemRenderer;
-	@Shadow private ItemStack tooltipStack;
-	@Shadow private Font tooltipFont;
+	@Shadow(remap = false) private ItemStack tooltipStack;
+	@Shadow(remap = false) private Font tooltipFont;
 	@Shadow protected Font font;
 
 	@Shadow public abstract List<? extends GuiEventListener> children();

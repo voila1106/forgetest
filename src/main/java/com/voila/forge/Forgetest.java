@@ -130,9 +130,7 @@ public class Forgetest {
 		}
 	}
 
-	/**
-	 * remove burning and underwater overlay
-	 */
+	/** remove burning and underwater overlay */
 	@SubscribeEvent
 	public void onOverlay(RenderBlockOverlayEvent event){
 		//if(event.getOverlayType() != RenderBlockOverlayEvent.OverlayType.BLOCK)
@@ -334,11 +332,11 @@ public class Forgetest {
 		RenderSystem.enableTexture();
 	}
 
+	/** can adjust zoom scale */
 	@SubscribeEvent
 	public void onScroll(InputEvent.MouseScrollEvent event){
 		if(Minecraft.getInstance().player.isScoping()){
 			Keys.scopingScale= (float)Mth.clamp(Keys.scopingScale-event.getScrollDelta()*0.05,0.05,1.2);
-			//System.out.println("scale: "+Keys.scopingScale+" fovModifier: "+Minecraft.getInstance().player.getFieldOfViewModifier());
 			event.setCanceled(true);
 		}
 	}

@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
-/** can adjust zoom scale */
 @Mixin(MouseHandler.class)
 public abstract class MixinMouseHandler {
 	@Shadow private double lastMouseEventTime;

@@ -3,8 +3,10 @@ package com.voila.forge;
 import net.minecraft.*;
 import net.minecraft.client.*;
 import net.minecraft.client.player.*;
+import net.minecraft.world.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.level.block.*;
+import net.minecraft.world.phys.*;
 import net.minecraftforge.client.*;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.eventbus.api.*;
@@ -24,6 +26,8 @@ public class Keys {
 	public static KeyMapping scriptKey;
 	public static KeyMapping configScriptKey;
 	public static KeyMapping zoomKey;
+	public static KeyMapping clickAboveKey;
+	public static KeyMapping clickBelowKey;
 
 
 	public static boolean xray = false;
@@ -32,6 +36,8 @@ public class Keys {
 	public static Set<Block> enabledBlocks = new HashSet<>();
 	@Nullable
 	public static Script runningScript;
+
+	private static Minecraft mc;
 
 //	private static final Logger LOGGER = LogManager.getLogger();
 
@@ -45,6 +51,8 @@ public class Keys {
 		scriptKey = register("key." + Forgetest.ID + ".script", GLFW.GLFW_KEY_Y, "key.categories.misc");
 		configScriptKey = register("key." + Forgetest.ID + ".configScript", GLFW.GLFW_KEY_K, "key.categories.misc");
 		zoomKey=register("key."+Forgetest.ID+".zoom",GLFW.GLFW_KEY_C,"key.categories.misc");
+		clickAboveKey =register("key."+Forgetest.ID+".clickAbove",GLFW.GLFW_KEY_UP,"key.categories.misc");
+		clickBelowKey =register("key."+Forgetest.ID+".clickBelow",GLFW.GLFW_KEY_DOWN,"key.categories.misc");
 
 		new File("config/" + Forgetest.ID).mkdirs();
 	}
@@ -58,7 +66,10 @@ public class Keys {
 	@SubscribeEvent
 	public static void onKeyDown(InputEvent.KeyInputEvent event){
 //		LOGGER.info(event.getKey()+" "+event.getAction());
-		LocalPlayer player = Minecraft.getInstance().player;
+		if(mc==null){
+			mc=Minecraft.getInstance();
+		}
+		LocalPlayer player = mc.player;
 		if(player == null)
 			return;
 		Abilities ability = player.getAbilities();
@@ -71,13 +82,12 @@ public class Keys {
 			ability.mayfly = !ability.mayfly;
 		}
 		if(lightKey.consumeClick()){
-			Minecraft.getInstance().options.gamma().set(Minecraft.getInstance().options.gamma().get() > 1 ? 1d : 30d);
+			mc.options.gamma().set(mc.options.gamma().get() > 1 ? 1d : 30d);
 		}
 		if(xrayKey.consumeClick()){
 			toggleXray();
 		}
 		if(configXrayKey.consumeClick()){
-			Minecraft mc = Minecraft.getInstance();
 			if(mc.screen == null){
 				mc.setScreen(new ConfigXrayScreen());
 			}
@@ -86,17 +96,29 @@ public class Keys {
 			toggleScript();
 		}
 		if(configScriptKey.consumeClick()){
-			Minecraft.getInstance().setScreen(new SelectScriptScreen());
+			mc.setScreen(new SelectScriptScreen());
 		}
-		if(event.getKey() == zoomKey.getKey().getValue() && Minecraft.getInstance().screen==null)
+		if(event.getKey() == zoomKey.getKey().getValue() && mc.screen==null)
 			scoping = event.getAction() != 0;
+		if(clickBelowKey.consumeClick()){
+			if(mc.hitResult instanceof BlockHitResult pointing && pointing.getType()== HitResult.Type.BLOCK){
+				BlockHitResult below=new BlockHitResult(pointing.getLocation().add(0,-1,0),pointing.getDirection(),pointing.getBlockPos().below(),pointing.isInside());
+				mc.gameMode.useItemOn(player,InteractionHand.MAIN_HAND,below);
+			}
+		}
+		if(clickAboveKey.consumeClick()){
+			if(mc.hitResult instanceof BlockHitResult pointing && pointing.getType()== HitResult.Type.BLOCK){
+				BlockHitResult above=new BlockHitResult(pointing.getLocation().add(0,1,0),pointing.getDirection(),pointing.getBlockPos().above(),pointing.isInside());
+				mc.gameMode.useItemOn(player,InteractionHand.MAIN_HAND,above);
+			}
+		}
 	}
 
 	private static void toggleXray(){
 		if(!xray){          //will enable
 			enabledBlocks = ConfigXrayScreen.readConfig();
 		}
-		Minecraft.getInstance().levelRenderer.allChanged();
+		mc.levelRenderer.allChanged();
 		xray = !xray;
 	}
 

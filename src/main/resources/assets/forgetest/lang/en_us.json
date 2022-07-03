@@ -9,6 +9,8 @@
     "key.forgetest.script": "toggle script",
     "key.forgetest.configScript": "Config Scripts",
     "key.forgetest.zoom": "Zoom",
+    "key.forgetest.clickAbove": "Click Above",
+    "key.forgetest.clickBelow": "Click Below",
     "title.forgetest.configXray": "Xray Config",
     "title.forgetest.save": "Done",
     "title.forgetest.add": "Add",
