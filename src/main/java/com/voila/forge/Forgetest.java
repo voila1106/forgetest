@@ -16,6 +16,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.*;
+import net.minecraft.world.level.block.state.*;
 import net.minecraft.world.phys.*;
 import net.minecraftforge.api.distmarker.*;
 import net.minecraftforge.client.event.*;
@@ -48,7 +49,8 @@ public class Forgetest {
 	public static String last;
 	public static boolean removeUseDelay;
 	public static boolean removeDestroyDelay;
-	public static Map<Shape,Vec3> shapes=new HashMap<>();
+	public static Map<Shape, Vec3> shapes = new HashMap<>();
+	public static Map<String, Map<BlockPos, BlockState>> stolen = new HashMap<>();
 
 	@Nullable
 	public static KeyMapping ofZoom;
@@ -68,15 +70,15 @@ public class Forgetest {
 		removeUseDelay = Boolean.parseBoolean(getConfig("removeUseDelay"));
 		removeDestroyDelay = Boolean.parseBoolean(getConfig("removeDestroyDelay"));
 
-		StringBuilder sb=new StringBuilder("Re-written methods: ").append('\n');
+		StringBuilder sb = new StringBuilder("Re-written methods: ").append('\n');
 		try{
-			Set<Class<?>> mixinClasses = findAllClasses(getClass().getPackageName()+".mixin");
-			for(Class<?> clazz:mixinClasses){
-				for(Method m:clazz.getDeclaredMethods()){
+			Set<Class<?>> mixinClasses = findAllClasses(getClass().getPackageName() + ".mixin");
+			for(Class<?> clazz : mixinClasses){
+				for(Method m : clazz.getDeclaredMethods()){
 					ms:
-					for(Annotation a:m.getAnnotations()){
-						for(Class<?> c:a.getClass().getInterfaces()){
-							if(c.getName().equals(getClass().getPackageName()+".Rewrite")){
+					for(Annotation a : m.getAnnotations()){
+						for(Class<?> c : a.getClass().getInterfaces()){
+							if(c.getName().equals(getClass().getPackageName() + ".Rewrite")){
 								sb.append(m).append('\n');
 								break ms;
 							}
@@ -84,14 +86,14 @@ public class Forgetest {
 					}
 				}
 			}
-			Files.write(new File("config/"+ID+"/rewrite.txt").toPath(),sb.toString().getBytes());
+			Files.write(new File("config/" + ID + "/rewrite.txt").toPath(), sb.toString().getBytes());
 		}catch(IOException e){
 			e.printStackTrace();
 		}
 
 	}
 
-	public Set<Class<?>> findAllClasses(String packageName) throws IOException {
+	public Set<Class<?>> findAllClasses(String packageName) throws IOException{
 		return ClassPath.from(ClassLoader.getSystemClassLoader())
 			.getAllClasses()
 			.stream()
@@ -146,7 +148,7 @@ public class Forgetest {
 	public static void checkInv(Entity target, boolean fromEvent){
 		LocalPlayer me = Minecraft.getInstance().player;
 		if(me == null || !(target instanceof Player player)){
-			sendMessage(Component.translatable("msg."+ID+".invalidPlayer").withStyle(ChatFormatting.RED));
+			sendMessage(Component.translatable("msg." + ID + ".invalidPlayer").withStyle(ChatFormatting.RED));
 			return;
 		}
 		if(fromEvent && !me.isCrouching()){
@@ -306,27 +308,27 @@ public class Forgetest {
 	public static void renderShape(PoseStack stack, Shape shape, double x, double y, double z){
 		RenderSystem.enableDepthTest();
 		RenderSystem.setShader(GameRenderer::getPositionColorShader);
-		VertexConsumer buffer= Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(RenderType.LINES);
+		VertexConsumer buffer = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(RenderType.LINES);
 		RenderSystem.disableTexture();
 		RenderSystem.disableBlend();
 		RenderSystem.lineWidth(1.0F);
-		Vec3 pos=Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-		float r=shape.getColor().x();
-		float g=shape.getColor().y();
-		float b=shape.getColor().z();
-		float a=shape.getColor().w();
+		Vec3 pos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+		float r = shape.getColor().x();
+		float g = shape.getColor().y();
+		float b = shape.getColor().z();
+		float a = shape.getColor().w();
 
 		shape.forAllEdges((minX, minY, minZ, maxX, maxY, maxZ) -> {
-			float f = (float)(maxX-minX);
-			float f1 = (float)(maxY-minY);
-			float f2 = (float)(maxZ-minZ);
+			float f = (float)(maxX - minX);
+			float f1 = (float)(maxY - minY);
+			float f2 = (float)(maxZ - minZ);
 			float f3 = Mth.sqrt(f * f + f1 * f1 + f2 * f2);
 			f /= f3;
 			f1 /= f3;
 			f2 /= f3;
 
-			buffer.vertex(stack.last().pose(), (float)(minX + x-pos.x), (float)(minY + y-pos.y),(float)(minZ + z-pos.z)).color(r, g, b, a).normal(stack.last().normal(),f,f1,f2).endVertex();
-			buffer.vertex(stack.last().pose(),(float)(maxX + x-pos.x), (float)(maxY + y-pos.y),(float)(maxZ + z-pos.z)).color(r, g, b, a).normal(stack.last().normal(),f,f1,f2).endVertex();
+			buffer.vertex(stack.last().pose(), (float)(minX + x - pos.x), (float)(minY + y - pos.y), (float)(minZ + z - pos.z)).color(r, g, b, a).normal(stack.last().normal(), f, f1, f2).endVertex();
+			buffer.vertex(stack.last().pose(), (float)(maxX + x - pos.x), (float)(maxY + y - pos.y), (float)(maxZ + z - pos.z)).color(r, g, b, a).normal(stack.last().normal(), f, f1, f2).endVertex();
 		});
 		RenderSystem.enableBlend();
 		RenderSystem.enableTexture();
@@ -336,7 +338,7 @@ public class Forgetest {
 	@SubscribeEvent
 	public void onScroll(InputEvent.MouseScrollEvent event){
 		if(Minecraft.getInstance().player.isScoping()){
-			Keys.scopingScale= (float)Mth.clamp(Keys.scopingScale-event.getScrollDelta()*0.05,0.05,1.2);
+			Keys.scopingScale = (float)Mth.clamp(Keys.scopingScale - event.getScrollDelta() * 0.05, 0.05, 1.2);
 			event.setCanceled(true);
 		}
 	}

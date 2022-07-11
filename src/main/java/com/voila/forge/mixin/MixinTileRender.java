@@ -34,6 +34,7 @@ public abstract class MixinTileRender {
 	}
 
 	/** ignore render distance when xray enabled */
+	@Rewrite
 	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
 	private <E extends BlockEntity> void t(E tileEntityIn, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, CallbackInfo info){
 		if(Keys.xray){

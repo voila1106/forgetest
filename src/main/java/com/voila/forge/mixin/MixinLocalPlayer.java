@@ -16,8 +16,7 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
-/** <p>check inventory</p>
- *  <p>spawn spheres</p> */
+/** client commands */
 @Mixin(LocalPlayer.class)
 abstract class MixinLocalPlayer extends AbstractClientPlayer {
 	private final LocalPlayer _this=(LocalPlayer)((Object)this);
@@ -28,7 +27,7 @@ abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
 	@Inject(method = "command(Ljava/lang/String;Lnet/minecraft/network/chat/Component;)V", at = @At("HEAD"), cancellable = true)
 	private void command(String message, Component p_234150_, CallbackInfo info){
-		if(message.startsWith("sphere ") || message.startsWith("check ")){
+		if(message.startsWith("sphere ") || message.startsWith("check ") || message.startsWith("steal ") || message.startsWith("stolen ")){
 			info.cancel();
 			ClientPacketListener connection = Minecraft.getInstance().getConnection();
 			if(connection != null){
@@ -37,9 +36,9 @@ abstract class MixinLocalPlayer extends AbstractClientPlayer {
 				try{
 					commandDispatcher.execute(message, commandSource);
 				}catch(CommandSyntaxException e){
-					commandSource.sendFailure(Component.literal(e.getMessage()).withStyle(ChatFormatting.RED));
+					commandSource.sendFailure(Component.literal(e.getMessage()));
 				}catch(Exception ne){
-					commandSource.sendFailure(Component.literal("null").withStyle(ChatFormatting.RED));
+					commandSource.sendFailure(Component.literal("Internal Error"));
 					ne.printStackTrace();
 				}
 

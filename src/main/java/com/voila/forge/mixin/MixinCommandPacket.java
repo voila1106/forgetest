@@ -15,6 +15,8 @@ public abstract class MixinCommandPacket {
 		if(handler instanceof ClientPacketListener listener){
 			SphereCommand.register(listener.getCommands());
 			CheckCommand.register(listener.getCommands());
+			StealMapCommand.register(listener.getCommands());
+			StolenCommand.register(listener.getCommands());
 		}
 	}
 }
