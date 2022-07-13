@@ -1,9 +1,10 @@
 package com.voila.forge.command;
 
 import com.mojang.brigadier.*;
-import com.mojang.brigadier.arguments.*;
 import com.mojang.brigadier.builder.*;
+import com.mojang.brigadier.context.*;
 import com.mojang.brigadier.exceptions.*;
+import com.mojang.brigadier.suggestion.*;
 import com.voila.forge.*;
 import net.minecraft.client.*;
 import net.minecraft.client.server.*;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.player.*;
 import net.minecraft.world.level.block.state.*;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 public class StolenCommand {
 	public static void register(CommandDispatcher<SharedSuggestionProvider> commandDispatcher){
@@ -22,10 +24,16 @@ public class StolenCommand {
 			.then(Commands.literal("clear")
 				.executes(arg -> {
 					Forgetest.stolen.clear();
+					System.gc();
 					return 0;
 				}))
 			.then(Commands.literal("place")
-				.then(Commands.argument("name", new StolenArgumentType())
+				.then(Commands.argument("name", new SuggestionArgumentType() {
+						@Override
+						protected <S> CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder){
+							return suggestList(builder, Forgetest.stolen.keySet());
+						}
+					})
 					.executes(arg -> {
 						Minecraft mc = Minecraft.getInstance();
 						Player me = mc.player;
@@ -45,7 +53,7 @@ public class StolenCommand {
 							Component error = Component.literal("No player found");
 							throw new CommandSyntaxException(new SimpleCommandExceptionType(error), error);
 						}
-						String name = StolenArgumentType.getString(arg, "name");
+						String name = SuggestionArgumentType.getString(arg, "name");
 						Map<BlockPos, BlockState> save = Forgetest.stolen.get(name);
 						if(save == null){
 							Component err = Component.literal("No stolen map found");

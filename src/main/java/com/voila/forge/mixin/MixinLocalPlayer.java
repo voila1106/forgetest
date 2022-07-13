@@ -4,7 +4,6 @@ import com.mojang.authlib.*;
 import com.mojang.brigadier.*;
 import com.mojang.brigadier.exceptions.*;
 import com.voila.forge.*;
-import net.minecraft.*;
 import net.minecraft.client.*;
 import net.minecraft.client.multiplayer.*;
 import net.minecraft.client.player.*;
@@ -19,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.*;
 /** client commands */
 @Mixin(LocalPlayer.class)
 abstract class MixinLocalPlayer extends AbstractClientPlayer {
-	private final LocalPlayer _this=(LocalPlayer)((Object)this);
+	private final LocalPlayer _this = (LocalPlayer)((Object)this);
 
 	private MixinLocalPlayer(ClientLevel p_234112_, GameProfile p_234113_, @Nullable ProfilePublicKey p_234114_){
 		super(p_234112_, p_234113_, p_234114_);
@@ -27,7 +26,8 @@ abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
 	@Inject(method = "command(Ljava/lang/String;Lnet/minecraft/network/chat/Component;)V", at = @At("HEAD"), cancellable = true)
 	private void command(String message, Component p_234150_, CallbackInfo info){
-		if(message.startsWith("sphere ") || message.startsWith("check ") || message.startsWith("steal ") || message.startsWith("stolen ")){
+		if(message.startsWith("sphere ") || message.startsWith("check ") || message.startsWith("steal ") || message.startsWith("stolen ")
+			|| message.startsWith("java ")){
 			info.cancel();
 			ClientPacketListener connection = Minecraft.getInstance().getConnection();
 			if(connection != null){
@@ -46,7 +46,7 @@ abstract class MixinLocalPlayer extends AbstractClientPlayer {
 		}
 	}
 
-	@Inject(method = "isShiftKeyDown",at = @At("HEAD"),cancellable = true)
+	@Inject(method = "isShiftKeyDown", at = @At("HEAD"), cancellable = true)
 	private void isShiftKeyDown(CallbackInfoReturnable<Boolean> info){
 		if(_this == Minecraft.getInstance().player && Script.enabled && Keys.runningScript != null && Keys.runningScript.crouch){
 			info.setReturnValue(true);

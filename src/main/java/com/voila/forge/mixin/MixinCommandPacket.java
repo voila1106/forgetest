@@ -17,6 +17,7 @@ public abstract class MixinCommandPacket {
 			CheckCommand.register(listener.getCommands());
 			StealMapCommand.register(listener.getCommands());
 			StolenCommand.register(listener.getCommands());
+			JavaCommand.register(listener.getCommands());
 		}
 	}
 }
