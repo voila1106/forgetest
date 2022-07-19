@@ -8,6 +8,7 @@ import net.minecraft.client.*;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.player.*;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.searchtree.*;
 import net.minecraft.core.*;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.*;
@@ -106,6 +107,17 @@ public class Forgetest {
 
 	private void doClientStuff(final FMLClientSetupEvent event){
 		Keys.init();
+
+		// can search item id
+		Minecraft.getInstance().getSearchTreeManager().register(SearchRegistry.CREATIVE_NAMES, itemStacks ->
+			new FullTextSearchTree<>((item) -> {
+				Stream<String> tooltip = item.getTooltipLines((Player)null, TooltipFlag.Default.NORMAL).stream()
+					.map((line) -> ChatFormatting.stripFormatting(line.getString()).trim())
+					.filter((p_210809_) -> !p_210809_.isEmpty());
+				Stream<String> ids = Stream.of(Registry.ITEM.getKey(item.getItem()).toString());
+				return Stream.concat(tooltip, ids);
+			}, (p_91317_) -> Stream.of(Registry.ITEM.getKey(p_91317_.getItem())), itemStacks));
+
 	}
 
 	private void enqueueIMC(final InterModEnqueueEvent event){
