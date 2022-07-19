@@ -3,7 +3,11 @@ package com.voila.forge.mixin;
 import com.voila.forge.*;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.screens.*;
+import net.minecraft.client.multiplayer.*;
 import net.minecraft.client.player.*;
+import net.minecraft.world.*;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.phys.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
@@ -27,6 +31,12 @@ public abstract class MixinMinecraft implements IMinecraft {
 	protected abstract void pickBlock();
 
 	@Shadow @Nullable public Screen screen;
+
+	@Shadow @Nullable public HitResult hitResult;
+
+	@Shadow @Nullable public MultiPlayerGameMode gameMode;
+
+	@Shadow @Nullable public Entity cameraEntity;
 
 	@Override
 	public void pick(){
@@ -77,6 +87,27 @@ public abstract class MixinMinecraft implements IMinecraft {
 	private void k(CallbackInfo info){
 		if(Forgetest.removeUseDelay)
 			rightClickDelay = 0;
+
+		// paving assist
+		if(rightClickDelay <= 0 && Keys.clickForwardKey.isDown()){
+			if(hitResult instanceof BlockHitResult pointing && pointing.getType() == HitResult.Type.BLOCK){
+				Vec3 target;
+				switch(cameraEntity.getDirection()){
+					case NORTH -> target = pointing.getLocation().add(0, 0, -1);
+					case SOUTH -> target = pointing.getLocation().add(0, 0, 1);
+					case EAST -> target = pointing.getLocation().add(1, 0, 0);
+					case WEST -> target = pointing.getLocation().add(-1, 0, 0);
+					default -> target = pointing.getLocation();
+				}
+				BlockHitResult forward = new BlockHitResult(target, cameraEntity.getDirection(), pointing.getBlockPos().relative(cameraEntity.getDirection()), pointing.isInside());
+				if(gameMode.useItemOn(player, InteractionHand.MAIN_HAND, forward) == InteractionResult.PASS){
+					gameMode.useItemOn(player, InteractionHand.OFF_HAND, forward);
+				}
+				if(!Forgetest.removeUseDelay){
+					rightClickDelay = 4;
+				}
+			}
+		}
 	}
 
 	@ModifyArg(method = "handleKeybinds",at = @At(value = "INVOKE",target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"),index = 0)

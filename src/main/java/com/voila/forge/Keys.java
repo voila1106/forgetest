@@ -1,5 +1,6 @@
 package com.voila.forge;
 
+import com.mojang.blaze3d.platform.*;
 import net.minecraft.*;
 import net.minecraft.client.*;
 import net.minecraft.client.player.*;
@@ -28,6 +29,7 @@ public class Keys {
 	public static KeyMapping zoomKey;
 	public static KeyMapping clickAboveKey;
 	public static KeyMapping clickBelowKey;
+	public static final KeyMapping clickForwardKey = new KeyMapping("key." + Forgetest.ID + ".clickForward", InputConstants.Type.MOUSE, 3, "key.categories.gameplay");
 
 
 	public static boolean xray = false;
@@ -52,8 +54,8 @@ public class Keys {
 		configScriptKey = register("key." + Forgetest.ID + ".configScript", GLFW.GLFW_KEY_K, "key.categories.misc");
 		zoomKey=register("key."+Forgetest.ID+".zoom",GLFW.GLFW_KEY_C,"key.categories.misc");
 		clickAboveKey =register("key."+Forgetest.ID+".clickAbove",GLFW.GLFW_KEY_UP,"key.categories.misc");
-		clickBelowKey =register("key."+Forgetest.ID+".clickBelow",GLFW.GLFW_KEY_DOWN,"key.categories.misc");
-
+		clickBelowKey = register("key." + Forgetest.ID + ".clickBelow", GLFW.GLFW_KEY_DOWN, "key.categories.misc");
+		ClientRegistry.registerKeyBinding(clickForwardKey);
 		new File("config/" + Forgetest.ID).mkdirs();
 	}
 
