@@ -9,6 +9,7 @@
     ],
     "client": [
         "MixinAbsClientPlayer",
+        "MixinAttributeInstance",
         "MixinBiome",
         "MixinBlockState",
         "MixinChatComponent",

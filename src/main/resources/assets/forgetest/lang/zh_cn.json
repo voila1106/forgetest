@@ -27,6 +27,7 @@
     "title.forgetest.off": "关",
     "title.forgetest.useDelay": "移除使用延迟",
     "title.forgetest.destroyDelay": "移除破坏延迟",
+    "title.forgetest.ignoreSlowness": "无视缓慢效果",
     "msg.forgetest.invalidColor": "颜色无效",
     "msg.forgetest.invalidPlayer": "玩家无效"
 }

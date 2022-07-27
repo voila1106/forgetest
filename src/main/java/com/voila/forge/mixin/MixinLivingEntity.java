@@ -20,10 +20,10 @@ public abstract class MixinLivingEntity extends Entity {
 		super(p_i48580_1_, p_i48580_2_);
 	}
 
-	/** ignore blindness effect */
+	/** ignore some effects */
 	@Inject(method = "hasEffect", at = @At("HEAD"), cancellable = true)
 	private void hasEffect(MobEffect effect, CallbackInfoReturnable<Boolean> info){
-		if(effect == MobEffects.BLINDNESS || effect == MobEffects.DARKNESS)
+		if(effect == MobEffects.BLINDNESS || effect == MobEffects.DARKNESS || effect == MobEffects.CONFUSION)
 			info.setReturnValue(false);
 	}
 

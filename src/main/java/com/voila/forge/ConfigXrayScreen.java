@@ -30,6 +30,7 @@ public class ConfigXrayScreen extends Screen {
 	SugList sugList;
 	Button useButton;
 	Button destroyButton;
+	Button slowButton;
 
 	private static final List<String> allBlocks = new ArrayList<>();
 
@@ -135,9 +136,23 @@ public class ConfigXrayScreen extends Screen {
 					append(Forgetest.removeDestroyDelay ?
 						Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
 						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
-				Forgetest.setConfig("removeDestroyDelay",Forgetest.removeDestroyDelay +"");
+				Forgetest.setConfig("removeDestroyDelay", Forgetest.removeDestroyDelay + "");
 			});
 		addRenderableWidget(destroyButton);
+		slowButton = new Button(blockList.getRowRight(), 150, buttonWidth, 20,
+			Component.translatable("title." + Forgetest.ID + ".ignoreSlowness").append(": ").
+				append(Forgetest.ignoreSlowness ?
+					Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+					Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)),
+			(button) -> {
+				Forgetest.ignoreSlowness = !Forgetest.ignoreSlowness;
+				slowButton.setMessage(Component.translatable("title." + Forgetest.ID + ".ignoreSlowness").append(": ").
+					append(Forgetest.ignoreSlowness ?
+						Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
+				Forgetest.setConfig("ignoreSlowness", Forgetest.ignoreSlowness + "");
+			});
+		addRenderableWidget(slowButton);
 		addWidget(sugList);
 		addWidget(blockList);
 		addWidget(addField);

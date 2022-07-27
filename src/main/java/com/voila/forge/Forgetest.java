@@ -50,6 +50,7 @@ public class Forgetest {
 	public static String last;
 	public static boolean removeUseDelay;
 	public static boolean removeDestroyDelay;
+	public static boolean ignoreSlowness;
 	public static Map<Shape, Vec3> shapes = new HashMap<>();
 	public static Map<String, Map<BlockPos, BlockState>> stolen = new HashMap<>();
 
@@ -70,6 +71,7 @@ public class Forgetest {
 
 		removeUseDelay = Boolean.parseBoolean(getConfig("removeUseDelay"));
 		removeDestroyDelay = Boolean.parseBoolean(getConfig("removeDestroyDelay"));
+		ignoreSlowness = Boolean.parseBoolean(getConfig("ignoreSlowness"));
 
 		StringBuilder sb = new StringBuilder("Re-written methods: ").append('\n');
 		try{
