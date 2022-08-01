@@ -2,7 +2,6 @@ package com.voila.forge.mixin;
 
 import com.mojang.authlib.*;
 import com.voila.forge.*;
-import net.minecraft.client.*;
 import net.minecraft.client.player.*;
 import net.minecraft.core.*;
 import net.minecraft.world.entity.player.*;
@@ -50,7 +49,7 @@ public abstract class MixinAbsClientPlayer extends Player {
 			info.setReturnValue(Keys.scopingScale);
 			return;
 		}
-		float fov = net.minecraftforge.client.ForgeHooksClient.getFieldOfView(this, f);
+		float fov = net.minecraftforge.client.ForgeHooksClient.getFieldOfViewModifier(this, f);
 		info.setReturnValue(fov);
 	}
 }

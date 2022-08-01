@@ -108,8 +108,6 @@ public class Forgetest {
 
 
 	private void doClientStuff(final FMLClientSetupEvent event){
-		Keys.init();
-
 		// can search item id
 		Minecraft.getInstance().getSearchTreeManager().register(SearchRegistry.CREATIVE_NAMES, itemStacks ->
 			new FullTextSearchTree<>((item) -> {
@@ -139,16 +137,21 @@ public class Forgetest {
 	}
 
 	@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-	public static class RegisterParticle {
+	public static class Register {
 		@SubscribeEvent
-		public static void onParticleRegistry(ParticleFactoryRegisterEvent event){
-			Minecraft.getInstance().particleEngine.register(TestItem.damage.get(), DamageParticle.Factory::new);
+		public static void onParticleRegistry(RegisterParticleProvidersEvent event){
+			event.register(TestItem.damage.get(), DamageParticle.Factory::new);
+		}
+
+		@SubscribeEvent
+		public static void onKeyRegistry(RegisterKeyMappingsEvent event){
+			Keys.init(event);
 		}
 	}
 
 	/** remove burning and underwater overlay */
 	@SubscribeEvent
-	public void onOverlay(RenderBlockOverlayEvent event){
+	public void onOverlay(RenderBlockScreenEffectEvent event){
 		//if(event.getOverlayType() != RenderBlockOverlayEvent.OverlayType.BLOCK)
 		event.setCanceled(true);
 	}
@@ -350,7 +353,7 @@ public class Forgetest {
 
 	/** can adjust zoom scale */
 	@SubscribeEvent
-	public void onScroll(InputEvent.MouseScrollEvent event){
+	public void onScroll(InputEvent.MouseScrollingEvent event){
 		if(Minecraft.getInstance().player.isScoping()){
 			Keys.scopingScale = (float)Mth.clamp(Keys.scopingScale - event.getScrollDelta() * 0.05, 0.05, 1.2);
 			event.setCanceled(true);

@@ -8,7 +8,6 @@ import net.minecraft.world.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.phys.*;
-import net.minecraftforge.client.*;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.eventbus.api.*;
 import org.lwjgl.glfw.*;
@@ -18,23 +17,23 @@ import java.io.*;
 import java.util.*;
 
 public class Keys {
-	public static KeyMapping upKey;
-	public static KeyMapping downKey;
-	public static KeyMapping toggleKey;
-	public static KeyMapping lightKey;
-	public static KeyMapping xrayKey;
-	public static KeyMapping configXrayKey;
-	public static KeyMapping scriptKey;
-	public static KeyMapping configScriptKey;
-	public static KeyMapping zoomKey;
-	public static KeyMapping clickAboveKey;
-	public static KeyMapping clickBelowKey;
-	public static final KeyMapping clickForwardKey = new KeyMapping("key." + Forgetest.ID + ".clickForward", InputConstants.Type.MOUSE, 3, "key.categories.gameplay");
+	public static final KeyMapping upKey = new KeyMapping("key." + Forgetest.ID + ".flySpeedUp", 61, "key.categories.movement");
+	public static final KeyMapping downKey = new KeyMapping("key." + Forgetest.ID + ".flySpeedDown", 45, "key.categories.movement");
+	public static final KeyMapping toggleFlyKey = new KeyMapping("key." + Forgetest.ID + ".toggleFly", 92, "key.categories.movement");
+	public static final KeyMapping lightKey = new KeyMapping("key." + Forgetest.ID + ".light", 76, "key.categories.misc");
+	public static final KeyMapping xrayKey = new KeyMapping("key." + Forgetest.ID + ".xray", 66, "key.categories.misc");
+	public static final KeyMapping configXrayKey = new KeyMapping("key." + Forgetest.ID + ".configXray", GLFW.GLFW_KEY_H, "key.categories.misc");
+	public static final KeyMapping scriptKey = new KeyMapping("key." + Forgetest.ID + ".script", GLFW.GLFW_KEY_Y, "key.categories.misc");
+	public static final KeyMapping configScriptKey = new KeyMapping("key." + Forgetest.ID + ".configScript", GLFW.GLFW_KEY_K, "key.categories.misc");
+	public static final KeyMapping zoomKey = new KeyMapping("key." + Forgetest.ID + ".zoom", GLFW.GLFW_KEY_C, "key.categories.misc");
+	public static final KeyMapping clickAboveKey = new KeyMapping("key." + Forgetest.ID + ".clickAbove", GLFW.GLFW_KEY_UP, "key.categories.misc");
+	public static final KeyMapping clickBelowKey = new KeyMapping("key." + Forgetest.ID + ".clickBelow", GLFW.GLFW_KEY_DOWN, "key.categories.misc");
+	public static final KeyMapping clickForwardKey = new KeyMapping("key." + Forgetest.ID + ".clickForward", InputConstants.Type.MOUSE, 3, "key.categories.misc");
 
 
 	public static boolean xray = false;
-	public static boolean scoping=false;
-	public static float scopingScale=0.15f;
+	public static boolean scoping = false;
+	public static float scopingScale = 0.15f;
 	public static Set<Block> enabledBlocks = new HashSet<>();
 	@Nullable
 	public static Script runningScript;
@@ -43,33 +42,27 @@ public class Keys {
 
 //	private static final Logger LOGGER = LogManager.getLogger();
 
-	public static void init(){
-		upKey = register("key." + Forgetest.ID + ".flySpeedUp", 61, "key.categories.movement");
-		downKey = register("key." + Forgetest.ID + ".flySpeedDown", 45, "key.categories.movement");
-		toggleKey = register("key." + Forgetest.ID + ".toggleFly", 92, "key.categories.movement");
-		lightKey = register("key." + Forgetest.ID + ".light", 76, "key.categories.misc");
-		xrayKey = register("key." + Forgetest.ID + ".xray", 66, "key.categories.misc");
-		configXrayKey = register("key." + Forgetest.ID + ".configXray", GLFW.GLFW_KEY_H, "key.categories.misc");
-		scriptKey = register("key." + Forgetest.ID + ".script", GLFW.GLFW_KEY_Y, "key.categories.misc");
-		configScriptKey = register("key." + Forgetest.ID + ".configScript", GLFW.GLFW_KEY_K, "key.categories.misc");
-		zoomKey=register("key."+Forgetest.ID+".zoom",GLFW.GLFW_KEY_C,"key.categories.misc");
-		clickAboveKey =register("key."+Forgetest.ID+".clickAbove",GLFW.GLFW_KEY_UP,"key.categories.misc");
-		clickBelowKey = register("key." + Forgetest.ID + ".clickBelow", GLFW.GLFW_KEY_DOWN, "key.categories.misc");
-		ClientRegistry.registerKeyBinding(clickForwardKey);
+	public static void init(RegisterKeyMappingsEvent event){
+		event.register(upKey);
+		event.register(downKey);
+		event.register(toggleFlyKey);
+		event.register(lightKey);
+		event.register(xrayKey);
+		event.register(configXrayKey);
+		event.register(scriptKey);
+		event.register(configScriptKey);
+		event.register(zoomKey);
+		event.register(clickBelowKey);
+		event.register(clickAboveKey);
+		event.register(clickForwardKey);
 		new File("config/" + Forgetest.ID).mkdirs();
 	}
 
-	private static KeyMapping register(String name, int code, String category){
-		KeyMapping key = new KeyMapping(name, code, category);
-		ClientRegistry.registerKeyBinding(key);
-		return key;
-	}
-
 	@SubscribeEvent
-	public static void onKeyDown(InputEvent.KeyInputEvent event){
+	public static void onKeyDown(InputEvent.Key event){
 //		LOGGER.info(event.getKey()+" "+event.getAction());
-		if(mc==null){
-			mc=Minecraft.getInstance();
+		if(mc == null){
+			mc = Minecraft.getInstance();
 		}
 		LocalPlayer player = mc.player;
 		if(player == null)
@@ -79,7 +72,7 @@ public class Keys {
 			ability.setFlyingSpeed(ability.getFlyingSpeed() + 0.005F);
 		}else if(downKey.consumeClick()){
 			ability.setFlyingSpeed(ability.getFlyingSpeed() - 0.005F);
-		}else if(toggleKey.consumeClick()){
+		}else if(toggleFlyKey.consumeClick()){
 			ability.setFlyingSpeed(0.05F);
 			ability.mayfly = !ability.mayfly;
 		}
