@@ -6,6 +6,7 @@ import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.network.chat.*;
 import net.minecraft.util.*;
+import org.slf4j.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
@@ -49,16 +50,23 @@ public abstract class MixinChatComponent {
 	@Final
 	private List<GuiMessage<Component>> allMessages;
 
+	@Shadow @Final private static Logger LOGGER;
+
 	@Rewrite
 	@Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V", at = @At("HEAD"), cancellable = true)
 	private void i(Component content, int hiddenId, int id, boolean exclude, CallbackInfo info){
 		info.cancel();
 
-		//no spam
+		// detail logging
+		LOGGER.info("[CHAT_DETAIL] {}", content.toString());
+
+		// no spam
 		String str = content.getString();
 		if(str.equals(Forgetest.last) && !(Minecraft.getInstance().screen instanceof ChatScreen)){
 			return;
 		}
+
+		// auto login
 		if(str.contains("登录") &&
 			str.contains("密码") &&
 			str.toLowerCase().contains("/l")){
@@ -67,7 +75,7 @@ public abstract class MixinChatComponent {
 		}
 		Forgetest.last = str;
 
-
+		// Origin
 		if(hiddenId != 0){
 			this.removeById(hiddenId);
 		}
