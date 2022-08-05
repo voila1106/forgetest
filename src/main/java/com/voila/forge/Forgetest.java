@@ -1,6 +1,7 @@
 package com.voila.forge;
 
 import com.google.common.reflect.*;
+import com.mojang.blaze3d.shaders.*;
 import com.mojang.blaze3d.systems.*;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.*;
@@ -18,6 +19,7 @@ import net.minecraft.world.entity.player.*;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.state.*;
+import net.minecraft.world.level.material.*;
 import net.minecraft.world.phys.*;
 import net.minecraftforge.api.distmarker.*;
 import net.minecraftforge.client.event.*;
@@ -154,6 +156,20 @@ public class Forgetest {
 	public void onOverlay(RenderBlockScreenEffectEvent event){
 		//if(event.getOverlayType() != RenderBlockOverlayEvent.OverlayType.BLOCK)
 		event.setCanceled(true);
+	}
+
+	/** change view in blocks */
+	@SubscribeEvent
+	public void onRenderFog(ViewportEvent.RenderFog event){
+		event.setCanceled(true);
+		FogType type = event.getType();
+		if((type == FogType.LAVA || type == FogType.POWDER_SNOW) && !event.getCamera().getEntity().isSpectator()){
+			event.setNearPlaneDistance(-8);
+			event.setFarPlaneDistance(Minecraft.getInstance().gameRenderer.getRenderDistance() * 0.4f);
+		}else if(type == FogType.WATER){
+			event.setFarPlaneDistance(120);
+			event.setFogShape(FogShape.SPHERE);
+		}
 	}
 
 	@SubscribeEvent
