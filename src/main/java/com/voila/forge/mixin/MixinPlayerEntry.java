@@ -22,17 +22,6 @@ import java.util.function.*;
 /** check inventory from social screen */
 @Mixin(PlayerEntry.class)
 public abstract class MixinPlayerEntry implements IPlayerEntry {
-//	@Dynamic
-//	@Inject(method = {"lambda$new$0", "m_100608_"}, at = @At(value = "HEAD"), cancellable = true)
-//	private void i(PlayerSocialManager manager, UUID uuid, String name, Button button, CallbackInfo info){
-//		if(Screen.hasShiftDown()){
-//			info.cancel();
-//			assert Minecraft.getInstance().level != null;
-//			Player player = Minecraft.getInstance().level.getPlayerByUUID(uuid);
-//			Forgetest.checkInv(player, false);
-//		}
-//	}
-
 	@Shadow float tooltipHoverTime;
 	@Shadow @Final Component hideText;
 	@Shadow @Nullable private Button hideButton;
