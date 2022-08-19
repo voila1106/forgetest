@@ -39,6 +39,7 @@
         "MixinPlayerEntry",
         "MixinScreen",
         "MixinServerListScreen",
+        "MixinSignRenderer",
         "MixinSoundEngine",
         "MixinThrownTrident",
         "MixinTileRender",
