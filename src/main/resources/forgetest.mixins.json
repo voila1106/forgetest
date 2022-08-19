@@ -29,6 +29,7 @@
         "MixinLivingRenderer",
         "MixinLoadingTerrain",
         "MixinLocalPlayer",
+        "MixinMerchantScreen",
         "MixinMinecraft",
         "MixinMouseHandler",
         "MixinOptionInstance",
