@@ -19,10 +19,12 @@ public class MixinOptionInstance<T> {
 	@Inject(method = "set",at = @At("HEAD"),cancellable = true)
 	private void set(T t, CallbackInfo info){
 		info.cancel();
-		if (!Minecraft.getInstance().isRunning()) {
+		//here
+
+		if(!Minecraft.getInstance().isRunning()){
 			this.value = t;
-		} else {
-			if (!Objects.equals(this.value, t)) {
+		}else{
+			if(!Objects.equals(this.value, t)){
 				this.value = t;
 				this.onValueUpdate.accept(this.value);
 			}

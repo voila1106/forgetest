@@ -28,10 +28,10 @@ public abstract class MixinEnchantment {
 		}
 
 		if (level != 1 || this.getMaxLevel() != 1) {
-			if(level <= 10){
+			if(level <= 10 && level >= 1){ //here
 				name.append(" ").append(Component.translatable("enchantment.level." + level));
 			}else{
-				name.append(" "+level);
+				name.append(" " + level);
 			}
 		}
 

@@ -24,7 +24,7 @@ public abstract class MixinLoadingTerrain extends Screen {
 	private void i(CallbackInfo info){
 		info.cancel();
 
-		boolean flag = this.oneTickSkipped || System.currentTimeMillis() > this.createdAt;
+		boolean flag = this.oneTickSkipped || System.currentTimeMillis() > this.createdAt; //here
 		if(flag && this.minecraft != null && this.minecraft.player != null){
 			BlockPos blockpos = this.minecraft.player.blockPosition();
 			boolean flag1 = this.minecraft.level != null && this.minecraft.level.isOutsideBuildHeight(blockpos.getY());

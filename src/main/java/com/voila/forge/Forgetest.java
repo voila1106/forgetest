@@ -33,6 +33,9 @@ import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.fml.javafmlmod.*;
 import org.apache.logging.log4j.*;
 import org.jetbrains.annotations.*;
+import org.spongepowered.asm.launch.*;
+import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.extensibility.*;
 
 import java.io.*;
 import java.lang.annotation.*;
@@ -53,8 +56,37 @@ public class Forgetest {
 	public static boolean removeUseDelay;
 	public static boolean removeDestroyDelay;
 	public static boolean ignoreSlowness;
+	public static final boolean ofInstalled;
 	public static Map<Shape, Vec3> shapes = new HashMap<>();
 	public static Map<String, Map<BlockPos, BlockState>> stolen = new HashMap<>();
+
+	static{
+		boolean b;
+		try{
+			Class.forName("net.optifine.Log");
+			b = true;
+		}catch(Throwable e){
+			b = false;
+		}
+		ofInstalled = b;
+		MixinBootstrap.init();
+
+		Mixins.registerErrorHandlerClass(ErrHandler.class.getName());
+
+	}
+
+	static class ErrHandler implements IMixinErrorHandler {
+
+		@Override
+		public ErrorAction onPrepareError(IMixinConfig config, Throwable th, IMixinInfo mixin, ErrorAction action){
+			return ErrorAction.WARN;
+		}
+
+		@Override
+		public ErrorAction onApplyError(String targetClassName, Throwable th, IMixinInfo mixin, ErrorAction action){
+			return ErrorAction.WARN;
+		}
+	}
 
 	@Nullable
 	public static KeyMapping ofZoom;
@@ -95,9 +127,7 @@ public class Forgetest {
 		}catch(IOException e){
 			e.printStackTrace();
 		}
-
 	}
-
 	public Set<Class<?>> findAllClasses(String packageName) throws IOException{
 		return ClassPath.from(ClassLoader.getSystemClassLoader())
 			.getAllClasses()
@@ -371,9 +401,13 @@ public class Forgetest {
 	@SubscribeEvent
 	public void onScroll(InputEvent.MouseScrollingEvent event){
 		if(Minecraft.getInstance().player.isScoping()){
-			Keys.scopingScale = (float)Mth.clamp(Keys.scopingScale - event.getScrollDelta() * 0.05, 0.05, 1.2);
+			Keys.scopingScale = (float) Mth.clamp(Keys.scopingScale - event.getScrollDelta() * 0.05, 0.05, 1.2);
 			event.setCanceled(true);
 		}
+	}
+
+	public static void doNothing(Object... objects){
+
 	}
 
 }

@@ -24,7 +24,7 @@ abstract class MixinLocalPlayer extends AbstractClientPlayer {
 		super(p_234112_, p_234113_, p_234114_);
 	}
 
-	@Inject(method = "command(Ljava/lang/String;Lnet/minecraft/network/chat/Component;)V", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "sendCommand(Ljava/lang/String;Lnet/minecraft/network/chat/Component;)V", at = @At("HEAD"), cancellable = true)
 	private void command(String message, Component p_234150_, CallbackInfo info){
 		if(message.startsWith("sphere ") || message.startsWith("check ") || message.startsWith("steal ") || message.startsWith("stolen ")
 			|| message.startsWith("java ")){
@@ -37,7 +37,7 @@ abstract class MixinLocalPlayer extends AbstractClientPlayer {
 					commandDispatcher.execute(message, commandSource);
 				}catch(CommandSyntaxException e){
 					commandSource.sendFailure(Component.literal(e.getMessage()));
-				}catch(Exception ne){
+				}catch(Throwable ne){
 					commandSource.sendFailure(Component.literal("Internal Error"));
 					ne.printStackTrace();
 				}

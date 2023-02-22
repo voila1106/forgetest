@@ -16,10 +16,12 @@ import org.spongepowered.asm.mixin.injection.callback.*;
  */
 @Mixin(ChatComponent.class)
 public abstract class MixinChatComponent {
-	@Shadow @Final private static Logger LOGGER;
+	@Shadow
+	@Final
+	private static Logger LOGGER;
 
-	@Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V", at = @At("HEAD"), cancellable = true)
-	private void i(Component content, int hiddenId, int id, boolean exclude, CallbackInfo info){
+	@Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V", at = @At("HEAD"), cancellable = true)
+	private void i(Component content, MessageSignature p_241566_, int p_240583_, GuiMessageTag p_240624_, boolean p_240558_, CallbackInfo info){
 		// detail logging
 		LOGGER.info("[CHAT_DETAIL] {}", content.toString());
 
@@ -31,16 +33,14 @@ public abstract class MixinChatComponent {
 		}
 
 		// auto login
-		if(str.contains("登录") &&
-			str.contains("密码") &&
-			str.toLowerCase().contains("/l")){
+		if(str.contains("登录") && str.contains("密码") && str.toLowerCase().contains("/l")){
 			assert Minecraft.getInstance().player != null;
-			Minecraft.getInstance().player.command("login 111111");
+			Minecraft.getInstance().player.commandUnsigned("login 111111");
 		}
 		Forgetest.last = str;
 	}
 
-	@ModifyConstant(method = "addMessage(Lnet/minecraft/network/chat/Component;IIZ)V", constant = @Constant(intValue = 100))
+	@ModifyConstant(method = "addMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/MessageSignature;ILnet/minecraft/client/GuiMessageTag;Z)V", constant = @Constant(intValue = 100))
 	private int modifyMaxLine(int constant){
 		return 2000;
 	}

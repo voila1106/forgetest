@@ -27,7 +27,7 @@ public abstract class MixinAbsClientPlayer extends Player {
 			f *= 1.1F;
 		}
 
-		f = (float)((double)f * (((isSprinting() ? 0.13 : 0.1) / 0.1 + 1.0D) / 2.0D));
+		f = (float) ((double) f * (((isSprinting() ? 0.13 : 0.1) / 0.1 + 1.0D) / 2.0D));  //here
 		if(this.getAbilities().getWalkingSpeed() == 0.0F || Float.isNaN(f) || Float.isInfinite(f)){
 			f = 1.0F;
 		}
@@ -45,7 +45,7 @@ public abstract class MixinAbsClientPlayer extends Player {
 			if(this.isScoping()){
 				f *= Keys.scopingScale;
 			}
-		}else if(this.isScoping()){
+		}else if(this.isScoping()){  //here
 			info.setReturnValue(Keys.scopingScale);
 			return;
 		}

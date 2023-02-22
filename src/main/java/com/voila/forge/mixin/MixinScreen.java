@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.world.item.*;
 import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
 import java.util.*;
@@ -33,7 +32,7 @@ public abstract class MixinScreen extends AbstractContainerEventHandler implemen
 	@Shadow public abstract void render(PoseStack p_96562_, int p_96563_, int p_96564_, float p_96565_);
 
 	@Rewrite
-	@Inject(method = "renderTooltipInternal", at = @At("HEAD"), cancellable = true)
+//	@Inject(method = "renderTooltipInternal", at = @At("HEAD"), cancellable = true)
 	private void renderTooltip(PoseStack stack, List<ClientTooltipComponent> componentList, int x, int y, CallbackInfo info){
 		info.cancel();
 

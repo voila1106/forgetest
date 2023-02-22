@@ -43,8 +43,8 @@ public abstract class MixinMouseHandler {
 			}else if(this.minecraft.options.getCameraType().isFirstPerson() && this.minecraft.player.isScoping()){
 				this.smoothTurnX.reset();
 				this.smoothTurnY.reset();
-				d2 = this.accumulatedDX * d5 * (Keys.scopingScale * 70 / 9 + (2 / 9.0));
-				d3 = this.accumulatedDY * d5 * (Keys.scopingScale * 70 / 9 + (2 / 9.0));
+				d2 = this.accumulatedDX * d5 * (Keys.scopingScale * 70 / 9 + (2 / 9.0)); //here
+				d3 = this.accumulatedDY * d5 * (Keys.scopingScale * 70 / 9 + (2 / 9.0)); //here
 			}else{
 				this.smoothTurnX.reset();
 				this.smoothTurnY.reset();

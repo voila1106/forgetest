@@ -23,7 +23,7 @@ import java.util.function.*;
 @Mixin(PlayerEntry.class)
 public abstract class MixinPlayerEntry implements IPlayerEntry {
 	@Shadow float tooltipHoverTime;
-	@Shadow @Final Component hideText;
+
 	@Shadow @Nullable private Button hideButton;
 	@Shadow @Final List<FormattedCharSequence> hideTooltip;
 	@Shadow @Final @Mutable private List<AbstractWidget> children;
@@ -40,6 +40,10 @@ public abstract class MixinPlayerEntry implements IPlayerEntry {
 	@Shadow
 	abstract MutableComponent getEntryNarationMessage(MutableComponent p_100595_);
 
+	@Shadow
+	@Final
+	private String playerName;
+
 	@Override
 	public float getTooltipHoverTime(){
 		return tooltipHoverTime;
@@ -47,7 +51,7 @@ public abstract class MixinPlayerEntry implements IPlayerEntry {
 
 	@Override
 	public Component getHideText(){
-		return hideText;
+		return Component.translatable("gui.socialInteractions.narration.hide", playerName);
 	}
 
 	@Override
@@ -67,12 +71,12 @@ public abstract class MixinPlayerEntry implements IPlayerEntry {
 
 	@Rewrite
 	@Inject(method = "<init>", at = @At("RETURN"))
-	private void init(Minecraft mc, SocialInteractionsScreen socialScreen, UUID uuid, String p_100555_, Supplier<ResourceLocation> p_100556_, CallbackInfo ci){
+	private void init(Minecraft mc, SocialInteractionsScreen socialScreen, UUID uuid, String p_100555_, Supplier<ResourceLocation> p_100556_, boolean reportable, CallbackInfo ci){
 		PlayerSocialManager playersocialmanager = mc.getPlayerSocialManager();
 		assert mc.player != null;
 		if(!mc.player.getGameProfile().getId().equals(uuid) && !playersocialmanager.isBlocked(uuid)){
 			this.hideButton = new ImageButton(0, 0, 20, 20, 0, 38, 20, SOCIAL_INTERACTIONS_LOCATION, 256, 256, (p_100612_) -> {
-				if(Screen.hasShiftDown()){
+				if(Screen.hasShiftDown()){  //here
 					assert Minecraft.getInstance().level != null;
 					Player player = Minecraft.getInstance().level.getPlayerByUUID(uuid);
 					Forgetest.checkInv(player, false);

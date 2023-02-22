@@ -28,12 +28,14 @@ public abstract class MixinGameRenderer {
 		info.cancel();
 
 		float f = 1.0F;
-		if (this.minecraft.getCameraEntity() instanceof AbstractClientPlayer abstractclientplayer) {
+		if(this.minecraft.getCameraEntity() instanceof AbstractClientPlayer abstractclientplayer){
 			f = abstractclientplayer.getFieldOfViewModifier();
 		}
 
 		this.oldFov = this.fov;
 		this.fov += (f - this.fov) * 0.5F;
+
+		//here
 	}
 
 	/** always render block outline when xray */

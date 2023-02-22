@@ -42,7 +42,7 @@ public abstract class MixinTileRender {
 			BlockEntityRenderer<E> tileentityrenderer = this.getRenderer(tileEntityIn);
 			if(tileentityrenderer != null){
 				if(tileEntityIn.hasLevel() && tileEntityIn.getType().isValid(tileEntityIn.getBlockState())){
-					tryRender(tileEntityIn, () ->
+					tryRender(tileEntityIn, () ->  //here  no shouldRender() condition
 						setupAndRender(tileentityrenderer, tileEntityIn, partialTicks, matrixStackIn, bufferIn));
 				}
 			}
