@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.phys.*;
+import org.slf4j.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
@@ -51,6 +52,10 @@ public abstract class MixinMinecraft implements IMinecraft {
 	@Shadow
 	@Final
 	public LevelRenderer levelRenderer;
+
+	@Shadow
+	@Final
+	private static Logger LOGGER;
 
 	@Override
 	public void pick(){
@@ -100,21 +105,26 @@ public abstract class MixinMinecraft implements IMinecraft {
 	/** remove use delay */
 	@Inject(method = "handleKeybinds", at = @At("HEAD"))
 	private void k(CallbackInfo info){
-		if(Forgetest.removeUseDelay)
+		if(Forgetest.removeUseDelay){
 			rightClickDelay = 0;
+		}
 
+		assert cameraEntity != null;
 		// paving assist
 		if(rightClickDelay <= 0 && Keys.clickForwardKey.isDown()){
 			if(hitResult instanceof BlockHitResult pointing && pointing.getType() == HitResult.Type.BLOCK){
-				Vec3 target;
-				switch(cameraEntity.getDirection()){
-					case NORTH -> target = pointing.getLocation().add(0, 0, -1);
-					case SOUTH -> target = pointing.getLocation().add(0, 0, 1);
-					case EAST -> target = pointing.getLocation().add(1, 0, 0);
-					case WEST -> target = pointing.getLocation().add(-1, 0, 0);
-					default -> target = pointing.getLocation();
+				BlockHitResult forward = Screen.hasControlDown() ? pointing.withPosition(pointing.getBlockPos().relative(cameraEntity.getDirection())).withDirection(cameraEntity.getDirection().getOpposite()) : pointing.withDirection(cameraEntity.getDirection());
+				if(gameMode.useItemOn(player, InteractionHand.MAIN_HAND, forward) == InteractionResult.PASS){
+					gameMode.useItemOn(player, InteractionHand.OFF_HAND, forward);
 				}
-				BlockHitResult forward = new BlockHitResult(target, cameraEntity.getDirection(), pointing.getBlockPos().relative(cameraEntity.getDirection()), pointing.isInside());
+				if(!Forgetest.removeUseDelay){
+					rightClickDelay = 4;
+				}
+			}
+		}
+		if(rightClickDelay <= 0 && Keys.clickBehindKey.isDown()){
+			if(hitResult instanceof BlockHitResult pointing && pointing.getType() == HitResult.Type.BLOCK){
+				BlockHitResult forward = Screen.hasControlDown() ? pointing.withPosition(pointing.getBlockPos().relative(cameraEntity.getDirection().getOpposite())).withDirection(cameraEntity.getDirection()) : pointing.withDirection(cameraEntity.getDirection().getOpposite());
 				if(gameMode.useItemOn(player, InteractionHand.MAIN_HAND, forward) == InteractionResult.PASS){
 					gameMode.useItemOn(player, InteractionHand.OFF_HAND, forward);
 				}

@@ -1,9 +1,12 @@
 package com.voila.forge;
 
 import com.mojang.blaze3d.platform.*;
+import com.mojang.logging.*;
 import net.minecraft.*;
 import net.minecraft.client.*;
+import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.player.*;
+import net.minecraft.core.*;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.level.block.*;
@@ -11,6 +14,7 @@ import net.minecraft.world.phys.*;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.eventbus.api.*;
 import org.lwjgl.glfw.*;
+import org.slf4j.*;
 
 import javax.annotation.*;
 import java.io.*;
@@ -28,8 +32,8 @@ public class Keys {
 	public static final KeyMapping zoomKey = new KeyMapping("key." + Forgetest.ID + ".zoom", GLFW.GLFW_KEY_C, "key.categories.misc");
 	public static final KeyMapping clickAboveKey = new KeyMapping("key." + Forgetest.ID + ".clickAbove", GLFW.GLFW_KEY_UP, "key.categories.misc");
 	public static final KeyMapping clickBelowKey = new KeyMapping("key." + Forgetest.ID + ".clickBelow", GLFW.GLFW_KEY_DOWN, "key.categories.misc");
-	public static final KeyMapping clickForwardKey = new KeyMapping("key." + Forgetest.ID + ".clickForward", InputConstants.Type.MOUSE, 3, "key.categories.misc");
-
+	public static final KeyMapping clickForwardKey = new KeyMapping("key." + Forgetest.ID + ".clickForward", InputConstants.Type.MOUSE, 4, "key.categories.misc");
+	public static final KeyMapping clickBehindKey = new KeyMapping("key." + Forgetest.ID + ".clickBehind", InputConstants.Type.MOUSE, 3, "key.categories.misc");
 
 	public static boolean xray = false;
 	public static boolean scoping = false;
@@ -40,7 +44,7 @@ public class Keys {
 
 	private static Minecraft mc;
 
-//	private static final Logger LOGGER = LogManager.getLogger();
+	private static final Logger LOGGER = LogUtils.getLogger();
 
 	public static void init(RegisterKeyMappingsEvent event){
 		event.register(upKey);
@@ -55,6 +59,7 @@ public class Keys {
 		event.register(clickBelowKey);
 		event.register(clickAboveKey);
 		event.register(clickForwardKey);
+		event.register(clickBehindKey);
 		new File("config/" + Forgetest.ID).mkdirs();
 	}
 
@@ -97,13 +102,14 @@ public class Keys {
 			scoping = event.getAction() != 0;
 		if(clickBelowKey.consumeClick()){
 			if(mc.hitResult instanceof BlockHitResult pointing && pointing.getType()== HitResult.Type.BLOCK){
-				BlockHitResult below=new BlockHitResult(pointing.getLocation().add(0,-1,0),pointing.getDirection(),pointing.getBlockPos().below(),pointing.isInside());
-				mc.gameMode.useItemOn(player,InteractionHand.MAIN_HAND,below);
+				//BlockHitResult below=new BlockHitResult(pointing.getLocation().add(0,-1,0),pointing.getDirection(),pointing.getBlockPos().below(),pointing.isInside());
+				BlockHitResult below = Screen.hasControlDown() ? new BlockHitResult(pointing.getLocation().add(0, -1, 0), Direction.UP, pointing.getBlockPos().below(), pointing.isInside()) : pointing.withDirection(Direction.DOWN);
+				mc.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, below);
 			}
 		}
 		if(clickAboveKey.consumeClick()){
 			if(mc.hitResult instanceof BlockHitResult pointing && pointing.getType()== HitResult.Type.BLOCK){
-				BlockHitResult above=new BlockHitResult(pointing.getLocation().add(0,1,0),pointing.getDirection(),pointing.getBlockPos().above(),pointing.isInside());
+				BlockHitResult above = Screen.hasControlDown() ? new BlockHitResult(pointing.getLocation().add(0, 1, 0), Direction.DOWN, pointing.getBlockPos().above(), pointing.isInside()) : pointing.withDirection(Direction.UP);
 				mc.gameMode.useItemOn(player,InteractionHand.MAIN_HAND,above);
 			}
 		}
