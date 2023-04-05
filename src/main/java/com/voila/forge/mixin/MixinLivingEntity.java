@@ -1,12 +1,9 @@
 package com.voila.forge.mixin;
 
-import com.voila.forge.*;
 import net.minecraft.client.*;
-import net.minecraft.client.player.*;
 import net.minecraft.network.syncher.*;
 import net.minecraft.world.effect.*;
 import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.decoration.*;
 import net.minecraft.world.level.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -25,16 +22,6 @@ public abstract class MixinLivingEntity extends Entity {
 	private void hasEffect(MobEffect effect, CallbackInfoReturnable<Boolean> info){
 		if(effect == MobEffects.BLINDNESS || effect == MobEffects.DARKNESS || effect == MobEffects.CONFUSION)
 			info.setReturnValue(false);
-	}
-
-	/** always render name tag to display health value (CustomNameVisible) */
-	@Inject(method = "shouldShowName", at = @At("HEAD"), cancellable = true)
-	private void shouldShowName(CallbackInfoReturnable<Boolean> info){
-		LocalPlayer player = Minecraft.getInstance().player;
-		if(player == null)
-			return;
-		if(!(_this instanceof ArmorStand) && position().distanceTo(player.position()) < Forgetest.getNameDistance() && !Forgetest.noNameTag)
-			info.setReturnValue(true);
 	}
 
 	/** remove potion particle */

@@ -15,6 +15,7 @@ import net.minecraft.nbt.*;
 import net.minecraft.network.chat.*;
 import net.minecraft.util.*;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.item.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.*;
@@ -130,6 +131,7 @@ public class Forgetest {
 			e.printStackTrace();
 		}
 	}
+
 	public Set<Class<?>> findAllClasses(String packageName) throws IOException{
 		return ClassPath.from(ClassLoader.getSystemClassLoader())
 			.getAllClasses()
@@ -145,7 +147,7 @@ public class Forgetest {
 		// can search item id
 		Minecraft.getInstance().getSearchTreeManager().register(SearchRegistry.CREATIVE_NAMES, itemStacks ->
 			new FullTextSearchTree<>((item) -> {
-				Stream<String> tooltip = item.getTooltipLines((Player)null, TooltipFlag.Default.NORMAL).stream()
+				Stream<String> tooltip = item.getTooltipLines((Player) null, TooltipFlag.Default.NORMAL).stream()
 					.map((line) -> ChatFormatting.stripFormatting(line.getString()).trim())
 					.filter((p_210809_) -> !p_210809_.isEmpty());
 				Stream<String> ids = Stream.of(Registry.ITEM.getKey(item.getItem()).toString());
@@ -384,16 +386,16 @@ public class Forgetest {
 		float a = shape.getColor().w();
 
 		shape.forAllEdges((minX, minY, minZ, maxX, maxY, maxZ) -> {
-			float f = (float)(maxX - minX);
-			float f1 = (float)(maxY - minY);
-			float f2 = (float)(maxZ - minZ);
+			float f = (float) (maxX - minX);
+			float f1 = (float) (maxY - minY);
+			float f2 = (float) (maxZ - minZ);
 			float f3 = Mth.sqrt(f * f + f1 * f1 + f2 * f2);
 			f /= f3;
 			f1 /= f3;
 			f2 /= f3;
 
-			buffer.vertex(stack.last().pose(), (float)(minX + x - pos.x), (float)(minY + y - pos.y), (float)(minZ + z - pos.z)).color(r, g, b, a).normal(stack.last().normal(), f, f1, f2).endVertex();
-			buffer.vertex(stack.last().pose(), (float)(maxX + x - pos.x), (float)(maxY + y - pos.y), (float)(maxZ + z - pos.z)).color(r, g, b, a).normal(stack.last().normal(), f, f1, f2).endVertex();
+			buffer.vertex(stack.last().pose(), (float) (minX + x - pos.x), (float) (minY + y - pos.y), (float) (minZ + z - pos.z)).color(r, g, b, a).normal(stack.last().normal(), f, f1, f2).endVertex();
+			buffer.vertex(stack.last().pose(), (float) (maxX + x - pos.x), (float) (maxY + y - pos.y), (float) (maxZ + z - pos.z)).color(r, g, b, a).normal(stack.last().normal(), f, f1, f2).endVertex();
 		});
 		RenderSystem.enableBlend();
 		RenderSystem.enableTexture();
@@ -405,6 +407,53 @@ public class Forgetest {
 		if(Minecraft.getInstance().player.isScoping()){
 			Keys.scopingScale = (float) Mth.clamp(Keys.scopingScale - event.getScrollDelta() * 0.05, 0.05, 1.2);
 			event.setCanceled(true);
+		}
+	}
+
+	/**
+	 * <p>display mob health</p>
+	 * <p>display item name and count</p>
+	 * <p>display xp orb value</p>
+	 */
+	@SubscribeEvent
+	public void onRenderNameTag(RenderNameTagEvent event){
+		if(noNameTag){
+			return;
+		}
+		MutableComponent name = (MutableComponent) event.getContent();
+		if(event.getEntity() instanceof Mob mob){
+			float health = mob.getHealth();
+			int maxHealth = (int) mob.getMaxHealth();
+			String healthText;
+			if(health / maxHealth >= 0.66)
+				healthText = " " + ChatFormatting.GREEN + String.format("%.2f", health) + " / " + maxHealth;
+			else if(health / maxHealth >= 0.33)
+				healthText = " " + ChatFormatting.GOLD + String.format("%.2f", health) + " / " + maxHealth;
+			else
+				healthText = " " + ChatFormatting.RED + String.format("%.2f", health) + " / " + maxHealth;
+			name.append(Component.literal(healthText));
+			event.setContent(name);
+			event.setResult(Event.Result.ALLOW);
+		}else if(event.getEntity() instanceof ItemEntity item && !item.isCustomNameVisible()){
+			ItemStack itemStack = item.getItem();
+			int count = itemStack.getCount();
+			if(item.hasCustomName()){
+				name = item.getCustomName().copy();
+			}else{
+				name = itemStack.getHoverName().copy();
+				if(!itemStack.hasCustomHoverName()){
+					name.withStyle(itemStack.getRarity().getStyleModifier());
+				}
+			}
+			if(count > 1){
+				name.append(ChatFormatting.RESET + (ChatFormatting.WHITE + " x" + count));
+			}
+			event.setContent(name);
+			event.setResult(Event.Result.ALLOW);
+		}else if(event.getEntity() instanceof ExperienceOrb orb && !orb.isCustomNameVisible()){
+			int value = orb.getValue();
+			event.setContent(Component.literal(value + "").withStyle(ChatFormatting.YELLOW));
+			event.setResult(Event.Result.ALLOW);
 		}
 	}
 

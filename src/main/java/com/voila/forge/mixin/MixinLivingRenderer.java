@@ -3,11 +3,9 @@ package com.voila.forge.mixin;
 import com.mojang.blaze3d.vertex.*;
 import com.voila.forge.*;
 import net.minecraft.client.*;
-import net.minecraft.client.player.*;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.decoration.*;
 import net.minecraft.world.level.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -44,16 +42,5 @@ public abstract class MixinLivingRenderer {
 			}
 		}
 		hs.put(entity.hashCode(), health);
-	}
-
-	/** health */
-	@Inject(method = "shouldShowName(Lnet/minecraft/world/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
-	private void t(LivingEntity entity, CallbackInfoReturnable<Boolean> info){
-		LocalPlayer player = Minecraft.getInstance().player;
-		if(player == null)
-			return;
-		if(!(entity instanceof ArmorStand) && player.position().distanceTo(entity.position()) < Forgetest.getNameDistance()){
-			info.setReturnValue(true);
-		}
 	}
 }

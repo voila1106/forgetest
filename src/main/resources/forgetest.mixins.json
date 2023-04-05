@@ -20,7 +20,6 @@
         "MixinDisconnectedScreen",
         "MixinEffectName",
         "MixinEnchantment",
-        "MixinEntityRenderer",
         "MixinFluidRenderer",
         "MixinGameRenderer",
         "MixinGui",
