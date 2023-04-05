@@ -24,6 +24,7 @@
         "MixinFluidRenderer",
         "MixinGameRenderer",
         "MixinGui",
+        "MixinItemCooldowns",
         "MixinKeyMapping",
         "MixinLevelRenderer",
         "MixinLivingEntity",
