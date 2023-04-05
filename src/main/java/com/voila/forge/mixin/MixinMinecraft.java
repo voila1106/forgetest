@@ -3,6 +3,7 @@ package com.voila.forge.mixin;
 import com.voila.forge.*;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.screens.*;
+import net.minecraft.client.gui.screens.inventory.*;
 import net.minecraft.client.multiplayer.*;
 import net.minecraft.client.player.*;
 import net.minecraft.client.renderer.*;
@@ -95,6 +96,11 @@ public abstract class MixinMinecraft implements IMinecraft {
 			info.cancel();
 		}
 
+		//fast sign
+		if((screen instanceof SignEditScreen) && Forgetest.fastSign){
+			screen.onClose();
+			info.cancel();
+		}
 	}
 
 	@Inject(method = "startAttack", at = @At("HEAD"))

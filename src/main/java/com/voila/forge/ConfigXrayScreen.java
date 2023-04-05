@@ -90,7 +90,7 @@ public class ConfigXrayScreen extends Screen {
 			}else if(name.equals("look")){
 				HitResult result = player.pick(20, 0, false);
 				if(result.getType() == HitResult.Type.BLOCK){
-					addXrayBlock(Minecraft.getInstance().level.getBlockState(((BlockHitResult)result).getBlockPos()).getBlock());
+					addXrayBlock(Minecraft.getInstance().level.getBlockState(((BlockHitResult) result).getBlockPos()).getBlock());
 				}
 			}
 			Block block;
@@ -110,7 +110,7 @@ public class ConfigXrayScreen extends Screen {
 			Minecraft.getInstance().setScreen(null));
 		blockList = new BlockList();
 		sugList = new SugList();
-		int buttonWidth= font.width(Component.translatable("title." + Forgetest.ID + ".useDelay").append(": ").append(Component.translatable("title." + Forgetest.ID + ".off")).getVisualOrderText())+10;
+		int buttonWidth = font.width(Component.translatable("title." + Forgetest.ID + ".useDelay").append(": ").append(Component.translatable("title." + Forgetest.ID + ".off")).getVisualOrderText()) + 10;
 		useButton = new Button(blockList.getRowRight(), 115, buttonWidth, 20,
 			Component.translatable("title." + Forgetest.ID + ".useDelay").append(": ").
 				append(Forgetest.removeUseDelay ?
@@ -122,7 +122,7 @@ public class ConfigXrayScreen extends Screen {
 					append(Forgetest.removeUseDelay ?
 						Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
 						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
-				Forgetest.setConfig("removeUseDelay",Forgetest.removeUseDelay+"");
+				Forgetest.setConfig("removeUseDelay", Forgetest.removeUseDelay + "");
 			});
 		addRenderableWidget(useButton);
 		destroyButton = new Button(blockList.getRowRight(), 90, buttonWidth, 20,
@@ -153,6 +153,32 @@ public class ConfigXrayScreen extends Screen {
 				Forgetest.setConfig("ignoreSlowness", Forgetest.ignoreSlowness + "");
 			});
 		addRenderableWidget(slowButton);
+		addRenderableWidget(new Button(blockList.getRowRight(), 175, buttonWidth, 20,
+			Component.translatable("title." + Forgetest.ID + ".fastSign").append(": ").
+				append(Forgetest.fastSign ?
+					Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+					Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)),
+			button -> {
+				Forgetest.fastSign = !Forgetest.fastSign;
+				button.setMessage(Component.translatable("title." + Forgetest.ID + ".fastSign").append(": ").
+					append(Forgetest.fastSign ?
+						Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
+			}
+		));
+		addRenderableWidget(new Button(blockList.getRowRight(), 200, buttonWidth, 20,
+			Component.translatable("title." + Forgetest.ID + ".noTag").append(": ").
+				append(Forgetest.noNameTag ?
+					Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+					Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)),
+			button -> {
+				Forgetest.noNameTag = !Forgetest.noNameTag;
+				button.setMessage(Component.translatable("title." + Forgetest.ID + ".noTag").append(": ").
+					append(Forgetest.noNameTag ?
+						Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
+			}
+		));
 		addWidget(sugList);
 		addWidget(blockList);
 		addWidget(addField);

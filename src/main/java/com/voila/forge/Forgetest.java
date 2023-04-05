@@ -56,6 +56,8 @@ public class Forgetest {
 	public static boolean removeUseDelay;
 	public static boolean removeDestroyDelay;
 	public static boolean ignoreSlowness;
+	public static boolean fastSign;
+	public static boolean noNameTag;
 	public static final boolean ofInstalled;
 	public static Map<Shape, Vec3> shapes = new HashMap<>();
 	public static Map<String, Map<BlockPos, BlockState>> stolen = new HashMap<>();

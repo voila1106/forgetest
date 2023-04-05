@@ -33,7 +33,7 @@ public abstract class MixinLivingEntity extends Entity {
 		LocalPlayer player = Minecraft.getInstance().player;
 		if(player == null)
 			return;
-		if(!(_this instanceof ArmorStand) && position().distanceTo(player.position()) < Forgetest.getNameDistance())
+		if(!(_this instanceof ArmorStand) && position().distanceTo(player.position()) < Forgetest.getNameDistance() && !Forgetest.noNameTag)
 			info.setReturnValue(true);
 	}
 

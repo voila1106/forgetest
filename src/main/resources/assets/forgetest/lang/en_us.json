@@ -29,6 +29,8 @@
     "title.forgetest.useDelay": "Remove Use Delay",
     "title.forgetest.destroyDelay": "Remove Destroy Delay",
     "title.forgetest.ignoreSlowness": "Ignore slowness",
+    "title.forgetest.fastSign": "Fast sign placement",
+    "title.forgetest.noTag": "Don't render name tag",
     "msg.forgetest.invalidColor": "Invalid Color",
     "msg.forgetest.invalidPlayer": "Invalid Player"
 }
