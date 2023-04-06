@@ -83,6 +83,8 @@ public abstract class MixinMinecraft implements IMinecraft {
 		user = se;
 	}
 
+	private final Minecraft _this = (Minecraft) (Object) this;
+
 	@Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
 	private void setScreen(Screen screen, CallbackInfo info){
 		// reset spam state
@@ -98,6 +100,7 @@ public abstract class MixinMinecraft implements IMinecraft {
 
 		//fast sign
 		if((screen instanceof SignEditScreen) && Forgetest.fastSign){
+			screen.init(_this, 0, 0);
 			screen.onClose();
 			info.cancel();
 		}
