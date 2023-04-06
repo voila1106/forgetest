@@ -421,7 +421,8 @@ public class Forgetest {
 			return;
 		}
 		MutableComponent name = (MutableComponent) event.getContent();
-		if(event.getEntity() instanceof Mob mob){
+		if(event.getEntity() instanceof Mob || event.getEntity() instanceof AbstractClientPlayer){
+			LivingEntity mob = (LivingEntity) event.getEntity();
 			float health = mob.getHealth();
 			int maxHealth = (int) mob.getMaxHealth();
 			String healthText;
