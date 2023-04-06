@@ -16,6 +16,7 @@
         "MixinChatComponent",
         "MixinChunkRender",
         "MixinCommandPacket",
+        "MixinConfirmScreen",
         "MixinDebugOverlay",
         "MixinDisconnectedScreen",
         "MixinEffectName",
