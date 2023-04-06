@@ -39,7 +39,6 @@
         "MixinPlayer",
         "MixinPlayerController",
         "MixinPlayerEntry",
-        "MixinScreen",
         "MixinServerListScreen",
         "MixinSignRenderer",
         "MixinSoundEngine",

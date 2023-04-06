@@ -324,16 +324,16 @@ public class Forgetest {
 		try{
 			config.createNewFile();
 			String line;
-			BufferedReader br = new BufferedReader(new FileReader(config));
-			while((line = br.readLine()) != null){
-				String[] c = line.split("=", 2);
-				if(c.length < 2)
-					continue;
-				if(c[0].equals(key)){
-					return c[1];
+			try(BufferedReader br = new BufferedReader(new FileReader(config))){
+				while((line = br.readLine()) != null){
+					String[] c = line.split("=", 2);
+					if(c.length < 2)
+						continue;
+					if(c[0].equals(key)){
+						return c[1];
+					}
 				}
 			}
-			br.close();
 		}catch(IOException e){
 			e.printStackTrace();
 		}
@@ -348,21 +348,21 @@ public class Forgetest {
 			String line;
 			boolean found = false;
 			StringBuilder sb = new StringBuilder();
-			BufferedReader br = new BufferedReader(new FileReader(config));
-			while((line = br.readLine()) != null){
-				String[] c = line.split("=", 2);
-				if(c.length < 2)
-					continue;
-				if(c[0].equals(key)){
-					c[1] = value;
-					found = true;
+			try(BufferedReader br = new BufferedReader(new FileReader(config))){
+				while((line = br.readLine()) != null){
+					String[] c = line.split("=", 2);
+					if(c.length < 2)
+						continue;
+					if(c[0].equals(key)){
+						c[1] = value;
+						found = true;
+					}
+					sb.append(c[0]).append('=').append(c[1]).append('\n');
 				}
-				sb.append(c[0]).append('=').append(c[1]).append('\n');
 			}
 			if(!found){
 				sb.append(key).append('=').append(value).append('\n');
 			}
-			br.close();
 			FileWriter fr = new FileWriter(config);
 			fr.write(sb.toString());
 			fr.flush();

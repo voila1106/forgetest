@@ -34,8 +34,11 @@ public abstract class MixinChatComponent {
 
 		// auto login
 		if(str.contains("登录") && str.contains("密码") && str.toLowerCase().contains("/l")){
-			assert Minecraft.getInstance().player != null;
-			Minecraft.getInstance().player.commandUnsigned("login 111111");
+			String pass = Forgetest.getConfig("passwd");
+			if(!pass.isEmpty()){
+				assert Minecraft.getInstance().player != null;
+				Minecraft.getInstance().player.commandUnsigned("login " + pass);
+			}
 		}
 		Forgetest.last = str;
 	}
