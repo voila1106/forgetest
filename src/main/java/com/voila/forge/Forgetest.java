@@ -417,7 +417,8 @@ public class Forgetest {
 	 */
 	@SubscribeEvent
 	public void onRenderNameTag(RenderNameTagEvent event){
-		if(noNameTag){
+		Player player = Minecraft.getInstance().player;
+		if(player == null || event.getEntity().position().distanceTo(player.position()) > getNameDistance() || noNameTag){
 			return;
 		}
 		MutableComponent name = (MutableComponent) event.getContent();
