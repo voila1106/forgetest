@@ -111,21 +111,7 @@ public class ConfigXrayScreen extends Screen {
 		blockList = new BlockList();
 		sugList = new SugList();
 		int buttonWidth = font.width(Component.translatable("title." + Forgetest.ID + ".useDelay").append(": ").append(Component.translatable("title." + Forgetest.ID + ".off")).getVisualOrderText()) + 10;
-		useButton = new Button(blockList.getRowRight(), 115, buttonWidth, 20,
-			Component.translatable("title." + Forgetest.ID + ".useDelay").append(": ").
-				append(Forgetest.removeUseDelay ?
-					Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
-					Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)),
-			(button) -> {
-				Forgetest.removeUseDelay = !Forgetest.removeUseDelay;
-				useButton.setMessage(Component.translatable("title." + Forgetest.ID + ".useDelay").append(": ").
-					append(Forgetest.removeUseDelay ?
-						Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
-						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
-				Forgetest.setConfig("removeUseDelay", Forgetest.removeUseDelay + "");
-			});
-		addRenderableWidget(useButton);
-		destroyButton = new Button(blockList.getRowRight(), 90, buttonWidth, 20,
+		destroyButton = new Button(blockList.getRowRight() + 40, 90, buttonWidth, 20,
 			Component.translatable("title." + Forgetest.ID + ".destroyDelay").append(": ").
 				append(Forgetest.removeDestroyDelay ?
 					Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
@@ -139,7 +125,21 @@ public class ConfigXrayScreen extends Screen {
 				Forgetest.setConfig("removeDestroyDelay", Forgetest.removeDestroyDelay + "");
 			});
 		addRenderableWidget(destroyButton);
-		slowButton = new Button(blockList.getRowRight(), 150, buttonWidth, 20,
+		useButton = new Button(blockList.getRowRight() + 40, 110, buttonWidth, 20,
+			Component.translatable("title." + Forgetest.ID + ".useDelay").append(": ").
+				append(Forgetest.removeUseDelay ?
+					Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+					Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)),
+			(button) -> {
+				Forgetest.removeUseDelay = !Forgetest.removeUseDelay;
+				useButton.setMessage(Component.translatable("title." + Forgetest.ID + ".useDelay").append(": ").
+					append(Forgetest.removeUseDelay ?
+						Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
+				Forgetest.setConfig("removeUseDelay", Forgetest.removeUseDelay + "");
+			});
+		addRenderableWidget(useButton);
+		slowButton = new Button(blockList.getRowRight() + 40, 135, buttonWidth, 20,
 			Component.translatable("title." + Forgetest.ID + ".ignoreSlowness").append(": ").
 				append(Forgetest.ignoreSlowness ?
 					Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
@@ -153,7 +153,7 @@ public class ConfigXrayScreen extends Screen {
 				Forgetest.setConfig("ignoreSlowness", Forgetest.ignoreSlowness + "");
 			});
 		addRenderableWidget(slowButton);
-		addRenderableWidget(new Button(blockList.getRowRight(), 175, buttonWidth, 20,
+		addRenderableWidget(new Button(blockList.getRowRight() + 40, 155, buttonWidth, 20,
 			Component.translatable("title." + Forgetest.ID + ".fastSign").append(": ").
 				append(Forgetest.fastSign ?
 					Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
@@ -166,7 +166,7 @@ public class ConfigXrayScreen extends Screen {
 						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
 			}
 		));
-		addRenderableWidget(new Button(blockList.getRowRight(), 200, buttonWidth, 20,
+		addRenderableWidget(new Button(blockList.getRowRight() + 40, 175, buttonWidth, 20,
 			Component.translatable("title." + Forgetest.ID + ".noTag").append(": ").
 				append(Forgetest.noNameTag ?
 					Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
@@ -175,6 +175,19 @@ public class ConfigXrayScreen extends Screen {
 				Forgetest.noNameTag = !Forgetest.noNameTag;
 				button.setMessage(Component.translatable("title." + Forgetest.ID + ".noTag").append(": ").
 					append(Forgetest.noNameTag ?
+						Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
+			}
+		));
+		addRenderableWidget(new Button(blockList.getRowRight() + 40, 195, buttonWidth, 20,
+			Component.translatable("title." + Forgetest.ID + ".noFallDamage").append(": ").
+				append(Forgetest.noFallDamage ?
+					Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+					Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)),
+			button -> {
+				Forgetest.noFallDamage = !Forgetest.noFallDamage;
+				button.setMessage(Component.translatable("title." + Forgetest.ID + ".noFallDamage").append(": ").
+					append(Forgetest.noFallDamage ?
 						Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
 						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
 			}

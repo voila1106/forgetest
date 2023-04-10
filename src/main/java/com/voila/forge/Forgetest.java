@@ -59,6 +59,7 @@ public class Forgetest {
 	public static boolean ignoreSlowness;
 	public static boolean fastSign;
 	public static boolean noNameTag;
+	public static boolean noFallDamage;
 	public static final boolean ofInstalled;
 	public static Map<Shape, Vec3> shapes = new HashMap<>();
 	public static Map<String, Map<BlockPos, BlockState>> stolen = new HashMap<>();
@@ -132,6 +133,7 @@ public class Forgetest {
 		}
 	}
 
+	@SuppressWarnings("all")
 	public Set<Class<?>> findAllClasses(String packageName) throws IOException{
 		return ClassPath.from(ClassLoader.getSystemClassLoader())
 			.getAllClasses()
@@ -147,7 +149,7 @@ public class Forgetest {
 		// can search item id
 		Minecraft.getInstance().getSearchTreeManager().register(SearchRegistry.CREATIVE_NAMES, itemStacks ->
 			new FullTextSearchTree<>((item) -> {
-				Stream<String> tooltip = item.getTooltipLines((Player) null, TooltipFlag.Default.NORMAL).stream()
+				Stream<String> tooltip = item.getTooltipLines(null, TooltipFlag.Default.NORMAL).stream()
 					.map((line) -> ChatFormatting.stripFormatting(line.getString()).trim())
 					.filter((p_210809_) -> !p_210809_.isEmpty());
 				Stream<String> ids = Stream.of(Registry.ITEM.getKey(item.getItem()).toString());
@@ -459,8 +461,9 @@ public class Forgetest {
 		}
 	}
 
-	public static void doNothing(Object... objects){
-
+	public static Object doNothing(Object... objects){
+		LOGGER.info(objects[0]);
+		return false;
 	}
 
 }
