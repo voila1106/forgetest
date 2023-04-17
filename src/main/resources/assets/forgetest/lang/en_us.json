@@ -32,6 +32,7 @@
     "title.forgetest.fastSign": "Fast sign placement",
     "title.forgetest.noTag": "Don't render name tag",
     "title.forgetest.noFallDamage": "No fall damage",
+    "title.forgetest.noKnockBack": "No knock back",
     "msg.forgetest.invalidColor": "Invalid Color",
     "msg.forgetest.invalidPlayer": "Invalid Player"
 }

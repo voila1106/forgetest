@@ -53,4 +53,11 @@ abstract class MixinLocalPlayer extends AbstractClientPlayer {
 		}
 	}
 
+	/** No knock back */
+	@Override
+	public void lerpMotion(double p_20306_, double p_20307_, double p_20308_){
+		if(!Forgetest.noKnockBack){
+			super.lerpMotion(p_20306_, p_20307_, p_20308_);
+		}
+	}
 }

@@ -60,6 +60,7 @@ public class Forgetest {
 	public static boolean fastSign;
 	public static boolean noNameTag;
 	public static boolean noFallDamage;
+	public static boolean noKnockBack;
 	public static final boolean ofInstalled;
 	public static Map<Shape, Vec3> shapes = new HashMap<>();
 	public static Map<String, Map<BlockPos, BlockState>> stolen = new HashMap<>();
