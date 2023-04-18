@@ -15,6 +15,7 @@
         "MixinBlockState",
         "MixinChatComponent",
         "MixinChunkRender",
+        "MixinClientLevel",
         "MixinCommandPacket",
         "MixinConfirmScreen",
         "MixinConnection",

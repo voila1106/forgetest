@@ -33,6 +33,7 @@
     "title.forgetest.noTag": "不渲染标签",
     "title.forgetest.noFallDamage": "无摔落伤害",
     "title.forgetest.noKnockBack": "无击退",
+    "title.forgetest.noRain": "永不下雨",
     "msg.forgetest.invalidColor": "颜色无效",
     "msg.forgetest.invalidPlayer": "玩家无效"
 }

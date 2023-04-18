@@ -205,6 +205,19 @@ public class ConfigXrayScreen extends Screen {
 						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
 			}
 		));
+		addRenderableWidget(new Button(blockList.getRowRight() + 40, 235, buttonWidth, 20,
+			Component.translatable("title." + Forgetest.ID + ".noRain").append(": ").
+				append(Forgetest.noRain ?
+					Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+					Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)),
+			button -> {
+				Forgetest.noRain = !Forgetest.noRain;
+				button.setMessage(Component.translatable("title." + Forgetest.ID + ".noRain").append(": ").
+					append(Forgetest.noRain ?
+						Component.translatable("title." + Forgetest.ID + ".on").withStyle(ChatFormatting.GREEN) :
+						Component.translatable("title." + Forgetest.ID + ".off").withStyle(ChatFormatting.RED)));
+			}
+		));
 		addWidget(sugList);
 		addWidget(blockList);
 		addWidget(addField);
