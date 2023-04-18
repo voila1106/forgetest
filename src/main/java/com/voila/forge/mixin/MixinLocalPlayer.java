@@ -57,7 +57,7 @@ abstract class MixinLocalPlayer extends AbstractClientPlayer {
 	/** No knock back */
 	@Override
 	public void lerpMotion(double x, double y, double z){
-		if(!Forgetest.noKnockBack && new Vec3(x, y, z).length() < 1){
+		if(!Forgetest.noKnockBack || new Vec3(x, y, z).length() > 1){
 			super.lerpMotion(x, y, z);
 		}
 	}
