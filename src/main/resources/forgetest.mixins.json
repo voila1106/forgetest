@@ -37,7 +37,6 @@
         "MixinMouseHandler",
         "MixinOptionInstance",
         "MixinParticleEngine",
-        "MixinPlayer",
         "MixinPlayerController",
         "MixinPlayerEntry",
         "MixinServerListScreen",

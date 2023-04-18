@@ -10,6 +10,7 @@ import net.minecraft.client.player.*;
 import net.minecraft.commands.*;
 import net.minecraft.network.chat.*;
 import net.minecraft.world.entity.player.*;
+import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.*;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
@@ -55,9 +56,14 @@ abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
 	/** No knock back */
 	@Override
-	public void lerpMotion(double p_20306_, double p_20307_, double p_20308_){
-		if(!Forgetest.noKnockBack){
-			super.lerpMotion(p_20306_, p_20307_, p_20308_);
+	public void lerpMotion(double x, double y, double z){
+		if(!Forgetest.noKnockBack && new Vec3(x, y, z).length() < 1){
+			super.lerpMotion(x, y, z);
 		}
+	}
+
+	@Override
+	public boolean isScoping(){
+		return Keys.scoping || super.isScoping();
 	}
 }
