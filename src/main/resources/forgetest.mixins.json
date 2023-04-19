@@ -12,6 +12,7 @@
         "MixinArrow",
         "MixinAttributeInstance",
         "MixinBlockState",
+        "MixinBoat",
         "MixinChatComponent",
         "MixinChunkRender",
         "MixinClientLevel",
