@@ -62,7 +62,9 @@ public class Forgetest {
 	public static final boolean ofInstalled;
 	public static Map<Shape, Vec3> shapes = new HashMap<>();
 	public static Map<String, Map<BlockPos, BlockState>> stolen = new HashMap<>();
+	private final EvaluateThread evalThread = new EvaluateThread();
 	private static final Minecraft mc = Minecraft.getInstance();
+	public static Object evalObject;
 
 	static{
 		boolean b;
@@ -89,6 +91,7 @@ public class Forgetest {
 		eventBus.addListener(this::doClientStuff);
 		MinecraftForge.EVENT_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(Keys.class);
+		evalThread.start();
 
 		removeUseDelay = Boolean.parseBoolean(getConfig("removeUseDelay"));
 		removeDestroyDelay = Boolean.parseBoolean(getConfig("removeDestroyDelay"));
@@ -273,6 +276,9 @@ public class Forgetest {
 
 		}
 		delayedTask = map;
+		synchronized(evalThread){
+			evalThread.notify();
+		}
 	}
 
 	public static void runDelay(int ticks, Runnable task){
