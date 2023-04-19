@@ -1,5 +1,6 @@
 package com.voila.forge;
 
+import com.voila.forge.mixin.*;
 import net.minecraft.*;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.screens.inventory.*;
@@ -13,14 +14,15 @@ import net.minecraftforge.eventbus.api.*;
 import java.util.*;
 
 public class Script {
-	public boolean forward;
-	public boolean backward;
-	public boolean left;
-	public boolean right;
 	public boolean jump;
 	public boolean crouch;
 	public boolean use;
 	public boolean attack;
+	public boolean travelling;
+	public boolean sprint;
+	public float travelZ;
+	public float travelX;
+
 
 	private final Map<Long, List<Runnable>> tasks = new HashMap<>();
 	private Map<Long, List<Runnable>> running = new HashMap<>();
@@ -38,78 +40,21 @@ public class Script {
 		for(int i = 0; i < commands.length; i++){
 			String cmd = commands[i];
 			switch(cmd){
-				case "+for":
-					put(ticks, () -> forward = true);
-					break;
-				case "-for":
-					put(ticks, () -> forward = false);
-					break;
-				case "+back":
-					put(ticks, () -> backward = true);
-					break;
-				case "-back":
-					put(ticks, () -> backward = false);
-					break;
-				case "+left":
-					put(ticks, () -> left = true);
-					break;
-				case "-left":
-					put(ticks, () -> left = false);
-					break;
-				case "+right":
-					put(ticks, () -> right = true);
-					break;
-				case "-right":
-					put(ticks, () -> right = false);
-					break;
-				case "+jump":
-					put(ticks, () -> jump = true);
-					break;
-				case "-jump":
-					put(ticks, () -> jump = false);
-					break;
-				case "+crouch":
-					put(ticks, () -> {
-						crouch = true;
-						mc.options.keyShift.setDown(true);
-						player.setShiftKeyDown(true);
-					});
-					break;
-				case "-crouch":
-					put(ticks, () -> {
-						crouch = false;
-						mc.options.keyShift.setDown(false);
-						player.setShiftKeyDown(false);
-					});
-					break;
-				case "+sprint":
-					put(ticks, () -> player.setSprinting(true));
-					break;
-				case "-sprint":
-					put(ticks, () -> player.setSprinting(false));
-					break;
-				case "+use":
-					put(ticks, () -> use = true);
-					break;
-				case "-use":
-					put(ticks, () -> use = false);
-					break;
-				case "use":
-					put(ticks, () -> ((IMinecraft) mc).use());
-					break;
-				case "+attack":
-					put(ticks, () -> attack = true);
-					break;
-				case "-attack":
-					put(ticks, () -> attack = false);
-					break;
-				case "attack":
-					put(ticks, () -> ((IMinecraft) mc).attack());
-					break;
-				case "pick":
-					put(ticks, () -> ((IMinecraft) mc).pick());
-					break;
-				default:
+				case "-travel" -> put(ticks, () -> travelling = false);
+				case "+jump" -> put(ticks, () -> jump = true);
+				case "-jump" -> put(ticks, () -> jump = false);
+				case "+crouch" -> put(ticks, () -> crouch = true);
+				case "-crouch" -> put(ticks, () -> crouch = false);
+				case "+sprint" -> put(ticks, () -> sprint = true);
+				case "-sprint" -> put(ticks, () -> sprint = false);
+				case "+use" -> put(ticks, () -> use = true);
+				case "-use" -> put(ticks, () -> use = false);
+				case "use" -> put(ticks, () -> ((IMinecraftAccessor) mc).callStartUseItem());
+				case "+attack" -> put(ticks, () -> attack = true);
+				case "-attack" -> put(ticks, () -> attack = false);
+				case "attack" -> put(ticks, () -> ((IMinecraftAccessor) mc).callStartAttack());
+				case "pick" -> put(ticks, () -> ((IMinecraftAccessor) mc).callPickBlock());
+				default -> {
 					try{
 						if(cmd.startsWith("wait")){
 							ticks += Integer.parseInt(cmd.substring(5));
@@ -131,12 +76,20 @@ public class Script {
 								default -> throw new IllegalArgumentException("Illegal click type");
 							}
 							put(ticks, () -> clickSlot(slot, key, type));
+						}else if(cmd.startsWith("travel")){
+							String[] token = cmd.split(" ");
+							put(ticks, () -> {
+								travelZ = Float.parseFloat(token[1]);
+								travelX = Float.parseFloat(token[2]);
+								travelling = true;
+							});
 						}else if(!cmd.trim().isEmpty() && !cmd.startsWith("#") && !cmd.startsWith("\t") && !cmd.equals("loop")){
 							Forgetest.sendMessage(ChatFormatting.GOLD + "Warning: Cannot resolve line " + (i + 1) + ": " + cmd);
 						}
 					}catch(Throwable e){
 						throw new ScriptSyntaxException("Syntax error in line " + (i + 1) + ": " + e.getMessage());
 					}
+				}
 			}
 		}
 		if(commands[commands.length - 1].equals("loop")){
@@ -182,9 +135,7 @@ public class Script {
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
 	public void tick(TickEvent.ClientTickEvent event){
-		if(event.phase == TickEvent.Phase.START)
-			return;
-		if(!enabled)
+		if(event.phase == TickEvent.Phase.END || mc.isPaused() || !enabled)
 			return;
 		if(mc.player == null){
 			cancel();
@@ -216,6 +167,11 @@ public class Script {
 	public void cancel(){
 		running.clear();
 		enabled = false;
+		KeyMapping.releaseAll();
+		if(mc.player != null){
+			Input input = mc.player.input;
+			input.left = input.right = input.up = input.down = input.shiftKeyDown = input.jumping = false;
+		}
 		MinecraftForge.EVENT_BUS.unregister(this);
 	}
 

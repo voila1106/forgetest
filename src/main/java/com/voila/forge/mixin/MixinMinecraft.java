@@ -26,15 +26,6 @@ public abstract class MixinMinecraft implements IMinecraft {
 	@Shadow private int rightClickDelay;
 
 	@Shadow
-	protected abstract void startUseItem();
-
-	@Shadow
-	protected abstract boolean startAttack();
-
-	@Shadow
-	protected abstract void pickBlock();
-
-	@Shadow
 	@Nullable
 	public Screen screen;
 
@@ -58,29 +49,24 @@ public abstract class MixinMinecraft implements IMinecraft {
 	@Final
 	private static Logger LOGGER;
 
+	@Shadow
+	protected abstract void continueAttack(boolean p_91387_);
+
+
 	@Override
-	public void pick(){
-		pickBlock();
+	public void continueAttack(){
+		missTime = 0;
+		continueAttack(true);
 	}
 
 	@Override
-	public void use(){
-		startUseItem();
+	public void setUser(User user){
+		this.user = user;
 	}
 
 	@Override
-	public void attack(){
-		startAttack();
-	}
-
-	@Override
-	public User getSession(){
+	public User getUser(){
 		return user;
-	}
-
-	@Override
-	public void setSession(User se){
-		user = se;
 	}
 
 	private final Minecraft _this = (Minecraft) (Object) this;
@@ -144,27 +130,11 @@ public abstract class MixinMinecraft implements IMinecraft {
 		}
 	}
 
-	@ModifyArg(method = "handleKeybinds",at = @At(value = "INVOKE",target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"),index = 0)
-	private boolean continueAttackArg(boolean p_91387_){
-		if(Script.enabled && Keys.runningScript.attack){
-			missTime=0;
-			return true;
-		}
-		return p_91387_;
-	}
-
 	/** fix render error */
 	@Inject(method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V", at = @At("HEAD"))
 	private void clearLevel(Screen p_91321_, CallbackInfo ci){
 		Keys.xray = false;
 		Keys.scoping = false;
-	}
-
-	@Inject(method = "tick", at = @At("HEAD"))
-	private void tick(CallbackInfo info){
-		if(Script.enabled && screen != null){
-			screen.passEvents = true;
-		}
 	}
 
 	@Inject(method = "delayTextureReload", at = @At("HEAD"), cancellable = true)

@@ -3,13 +3,9 @@ package com.voila.forge;
 import net.minecraft.client.*;
 
 public interface IMinecraft {
-	void pick();
+	void continueAttack();
 
-	void use();
+	void setUser(User user);
 
-	void attack();
-
-	User getSession();
-
-	void setSession(User se);
+	User getUser();
 }

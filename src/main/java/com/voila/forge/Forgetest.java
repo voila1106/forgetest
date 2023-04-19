@@ -34,9 +34,6 @@ import net.minecraftforge.fml.event.lifecycle.*;
 import net.minecraftforge.fml.javafmlmod.*;
 import org.apache.logging.log4j.*;
 import org.jetbrains.annotations.*;
-import org.spongepowered.asm.launch.*;
-import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.extensibility.*;
 
 import java.io.*;
 import java.lang.annotation.*;
@@ -65,6 +62,7 @@ public class Forgetest {
 	public static final boolean ofInstalled;
 	public static Map<Shape, Vec3> shapes = new HashMap<>();
 	public static Map<String, Map<BlockPos, BlockState>> stolen = new HashMap<>();
+	private static final Minecraft mc = Minecraft.getInstance();
 
 	static{
 		boolean b;
@@ -75,23 +73,6 @@ public class Forgetest {
 			b = false;
 		}
 		ofInstalled = b;
-		MixinBootstrap.init();
-
-		Mixins.registerErrorHandlerClass(ErrHandler.class.getName());
-
-	}
-
-	static class ErrHandler implements IMixinErrorHandler {
-
-		@Override
-		public ErrorAction onPrepareError(IMixinConfig config, Throwable th, IMixinInfo mixin, ErrorAction action){
-			return ErrorAction.WARN;
-		}
-
-		@Override
-		public ErrorAction onApplyError(String targetClassName, Throwable th, IMixinInfo mixin, ErrorAction action){
-			return ErrorAction.WARN;
-		}
 	}
 
 	@Nullable
@@ -149,7 +130,7 @@ public class Forgetest {
 
 	private void doClientStuff(final FMLClientSetupEvent event){
 		// can search item id
-		Minecraft.getInstance().getSearchTreeManager().register(SearchRegistry.CREATIVE_NAMES, itemStacks ->
+		mc.getSearchTreeManager().register(SearchRegistry.CREATIVE_NAMES, itemStacks ->
 			new FullTextSearchTree<>((item) -> {
 				Stream<String> tooltip = item.getTooltipLines(null, TooltipFlag.Default.NORMAL).stream()
 					.map((line) -> ChatFormatting.stripFormatting(line.getString()).trim())
@@ -203,7 +184,7 @@ public class Forgetest {
 		FogType type = event.getType();
 		if((type == FogType.LAVA || type == FogType.POWDER_SNOW) && !event.getCamera().getEntity().isSpectator()){
 			event.setNearPlaneDistance(-8);
-			event.setFarPlaneDistance(Minecraft.getInstance().gameRenderer.getRenderDistance() * 0.4f);
+			event.setFarPlaneDistance(mc.gameRenderer.getRenderDistance() * 0.4f);
 		}else if(type == FogType.WATER){
 			event.setFarPlaneDistance(120);
 			event.setFogShape(FogShape.SPHERE);
@@ -217,7 +198,7 @@ public class Forgetest {
 	}
 
 	public static void checkInv(Entity target, boolean fromEvent){
-		LocalPlayer me = Minecraft.getInstance().player;
+		LocalPlayer me = mc.player;
 		if(me == null || !(target instanceof Player player)){
 			sendMessage(Component.translatable("msg." + ID + ".invalidPlayer").withStyle(ChatFormatting.RED));
 			return;
@@ -226,7 +207,7 @@ public class Forgetest {
 			return;
 		}
 		Inventory inv = player.getInventory();
-		MenuScreens.create(MenuType.GENERIC_9x5, Minecraft.getInstance(), "spy".hashCode(), player.getName());
+		MenuScreens.create(MenuType.GENERIC_9x5, mc, "spy".hashCode(), player.getName());
 		AbstractContainerMenu container = me.containerMenu;
 		ItemStack frame = Items.GRAY_STAINED_GLASS_PANE.getDefaultInstance().setHoverName(Component.empty());
 		frame.getOrCreateTag().put("isFrame", ByteTag.valueOf(true));
@@ -270,11 +251,11 @@ public class Forgetest {
 	}
 
 	public static void sendMessage(String msg){
-		Minecraft.getInstance().gui.getChat().addMessage(Component.literal(msg));
+		mc.gui.getChat().addMessage(Component.literal(msg));
 	}
 
 	public static void sendMessage(Component msg){
-		Minecraft.getInstance().gui.getChat().addMessage(msg);
+		mc.gui.getChat().addMessage(msg);
 	}
 
 	@OnlyIn(Dist.CLIENT)
@@ -310,7 +291,7 @@ public class Forgetest {
 	}
 
 	public static int getNameDistance(){
-		LocalPlayer player = Minecraft.getInstance().player;
+		LocalPlayer player = mc.player;
 		int distance = 25;
 		if(ofZoom != null && ofZoom.isDown()){
 			distance *= 2;
@@ -379,11 +360,11 @@ public class Forgetest {
 	public static void renderShape(PoseStack stack, Shape shape, double x, double y, double z){
 		RenderSystem.enableDepthTest();
 		RenderSystem.setShader(GameRenderer::getPositionColorShader);
-		VertexConsumer buffer = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(RenderType.LINES);
+		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
 		RenderSystem.disableTexture();
 		RenderSystem.disableBlend();
 		RenderSystem.lineWidth(1.0F);
-		Vec3 pos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+		Vec3 pos = mc.gameRenderer.getMainCamera().getPosition();
 		float r = shape.getColor().x();
 		float g = shape.getColor().y();
 		float b = shape.getColor().z();
@@ -408,7 +389,7 @@ public class Forgetest {
 	/** can adjust zoom scale */
 	@SubscribeEvent
 	public void onScroll(InputEvent.MouseScrollingEvent event){
-		if(Minecraft.getInstance().player.isScoping()){
+		if(mc.player.isScoping()){
 			Keys.scopingScale = (float) Mth.clamp(Keys.scopingScale - event.getScrollDelta() * 0.05, 0.05, 1.2);
 			event.setCanceled(true);
 		}
@@ -421,7 +402,7 @@ public class Forgetest {
 	 */
 	@SubscribeEvent
 	public void onRenderNameTag(RenderNameTagEvent event){
-		Player player = Minecraft.getInstance().player;
+		Player player = mc.player;
 		if(player == null || event.getEntity().position().distanceTo(player.position()) > getNameDistance() || noNameTag){
 			return;
 		}

@@ -25,7 +25,7 @@ public class SwitchAccountScreen extends Screen {
 		super(Component.translatable("menu." + Forgetest.ID + ".switchAccount"));
 		this.parent = parent;
 		if(origSession == null){
-			origSession = ((IMinecraft)Minecraft.getInstance()).getSession();
+			origSession = ((IMinecraft) Minecraft.getInstance()).getUser();
 		}
 	}
 
@@ -59,7 +59,7 @@ public class SwitchAccountScreen extends Screen {
 				String token = tokenField.getValue();
 				if(token.isEmpty())
 					token = uuid;
-				((IMinecraft)Minecraft.getInstance()).setSession(new User(username, uuid, token, Optional.empty(),Optional.empty(), User.Type.MOJANG));
+				((IMinecraft) Minecraft.getInstance()).setUser(new User(username, uuid, token, Optional.empty(), Optional.empty(), User.Type.MOJANG));
 				error = "";
 			}catch(Exception e){
 				error = e.getMessage();
@@ -71,7 +71,7 @@ public class SwitchAccountScreen extends Screen {
 			Component.translatable("title." + Forgetest.ID + ".restore"), button ->
 		{
 			try{
-				((IMinecraft)Minecraft.getInstance()).setSession(origSession);
+				((IMinecraft) Minecraft.getInstance()).setUser(origSession);
 				error = "";
 			}catch(Exception e){
 				error = e.getMessage();

@@ -19,7 +19,14 @@ import org.spongepowered.asm.mixin.injection.callback.*;
 /** client commands */
 @Mixin(LocalPlayer.class)
 abstract class MixinLocalPlayer extends AbstractClientPlayer {
-	private final LocalPlayer _this = (LocalPlayer)((Object)this);
+	@Shadow
+	public abstract void setSprinting(boolean p_108751_);
+
+	@Shadow
+	@Final
+	protected Minecraft minecraft;
+	@Shadow public Input input;
+	private final LocalPlayer _this = (LocalPlayer) ((Object) this);
 
 	private MixinLocalPlayer(ClientLevel p_234112_, GameProfile p_234113_, @Nullable ProfilePublicKey p_234114_){
 		super(p_234112_, p_234113_, p_234114_);
@@ -65,5 +72,41 @@ abstract class MixinLocalPlayer extends AbstractClientPlayer {
 	@Override
 	public boolean isScoping(){
 		return Keys.scoping || super.isScoping();
+	}
+
+	/** Do script */
+	@Inject(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/tutorial/Tutorial;onInput(Lnet/minecraft/client/player/Input;)V"))
+	private void aiStep(CallbackInfo info){
+		if(_this == minecraft.player && Script.enabled){
+			assert Keys.runningScript != null;
+			setSprinting(Keys.runningScript.sprint);
+			if(Keys.runningScript.travelling){
+				input.up = Keys.runningScript.travelZ > 0;
+				input.down = Keys.runningScript.travelZ < 0;
+				input.left = Keys.runningScript.travelX > 0;
+				input.right = Keys.runningScript.travelX < 0;
+			}
+			if(Keys.runningScript.use && (((IMinecraftAccessor) minecraft).getRightClickDelay() <= 0 || Forgetest.removeUseDelay)){
+				((IMinecraftAccessor) minecraft).callStartUseItem();
+			}
+			if(Keys.runningScript.attack){
+				((IMinecraft) minecraft).continueAttack();
+			}
+			input.jumping = Keys.runningScript.jump;
+			input.shiftKeyDown = Keys.runningScript.crouch;
+		}
+	}
+
+	@Inject(method = "serverAiStep", at = @At("HEAD"), cancellable = true)
+	private void serverAiStep(CallbackInfo info){
+		if(_this == minecraft.player && Script.enabled){
+			info.cancel();
+			super.serverAiStep();
+			assert Keys.runningScript != null;
+			xxa = Keys.runningScript.travelX;
+			zza = Keys.runningScript.travelZ;
+			jumping = Keys.runningScript.jump;
+			setSprinting(Keys.runningScript.sprint);
+		}
 	}
 }

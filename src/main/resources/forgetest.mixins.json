@@ -8,6 +8,7 @@
         "MixinSharedConstants"
     ],
     "client": [
+        "IMinecraftAccessor",
         "MixinAbsClientPlayer",
         "MixinArrow",
         "MixinAttributeInstance",
